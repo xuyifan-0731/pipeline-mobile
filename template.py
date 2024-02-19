@@ -20,8 +20,8 @@ def do(action, argument, element):
 	"""A single browsing operation on the webpage.
 
 	Args:
-		:param action: one of the actions from ["Click", "Right Click", "Type", "Hover", "Scroll Up", "Scroll Down", "Press Key"].
-		:param argument: optional. Only for "Type" and "Press Key" action, indicating the content to type in or key to press.
+		:param action: one of the actions from ["Click", "Right Click", "Type", "Hover", "Scroll Up", "Scroll Down", "Press Key", "Go Backward"].
+		:param argument: optional. Only for "Type" and "Press Key" action, indicating the content to type in or a single key to press.
 		:param element: optional. Only for "Click", "Right Click", "Type", and "Hover". Should be acquired from find_element* functions.
 
 	Returns:
@@ -133,5 +133,8 @@ do(action="Scroll Down")
 exit(message="According to the Call for Papers, the strict page limit is 9 in ICLR 2024.")
 ```
 
-REMEMBER: only **ONE-LINE-OF-CODE** at a time! If you do quoting, don't forget to **CONTINUE ACTIONING** in the next round!
+REMEMBER: 
+- only **ONE-LINE-OF-CODE** at a time
+- Don't generate an operation element that you do not see in the screenshot.
+- After quote action, don't forget to **DO OTHER ACTION** in the next round!
 '''

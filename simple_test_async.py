@@ -35,8 +35,9 @@ class Record:
         self.contents = []
         self.hashed_actions = defaultdict(list)
 
-    def check_abnormal_action(self, exe_res):
-        indexes = self.hashed_actions[str(self.contents[-1]['Analysis']) + str(exe_res)]
+    def check_abnormal_action(self):
+        round_free_response = '\n'.join(self.contents[-1]['response'].split('\n')[1:])
+        indexes = self.hashed_actions[round_free_response]
         return len(indexes) > 1 and indexes[-1] - indexes[-2] == TURN_NUMBER - indexes[-1]  # Repeition happens!
 
     def update_response(self, page, response, prompt="<|user|>\n** screenshot **"):
@@ -51,13 +52,30 @@ class Record:
         self.contents[-1]['parsed_action'] = exe_res
 
         # check abnormal action (looping)
-        if self.check_abnormal_action(exe_res):
+        if self.check_abnormal_action():
             raise RepetitionException()
 
         self.contents[-1]['status'] = 0 if exe_res is not None else 1  # 1 refers to error in execution
-        self.hashed_actions[str(self.contents[-1]['Analysis']) + str(exe_res)].append(TURN_NUMBER)
+        self.hashed_actions['\n'.join(self.contents[-1]['response'].split('\n')[1:])].append(TURN_NUMBER)
         with open(self.file_path, 'a') as f:
             f.write(json.dumps(self.contents[-1], ensure_ascii=False) + '\n')
+
+
+async def is_clickable(page, x, y):
+    return await page.evaluate(f'''
+    (() => {{
+        const elem = document.elementFromPoint({x}, {y});
+        if (!elem) return false; // No element at this position
+        
+        const style = window.getComputedStyle(elem);
+        const isVisible = style.display !== 'none' && style.visibility !== 'hidden' && style.opacity !== '0';
+        const isNotDisabled = !elem.disabled;
+        // Infer clickability based on tag name, roles, or other attributes
+        const isLikelyClickable = elem.tagName === 'A' && elem.hasAttribute('href') || elem.tagName === 'BUTTON' || elem.getAttribute('role') === 'button' || elem.hasAttribute('href');
+        
+        return isVisible && isNotDisabled && isLikelyClickable;
+    }})()
+    ''')
 
 
 def plot_bbox(bbox):
@@ -87,6 +105,7 @@ async def operate_relative_bbox_center(page, code, action, is_right=False):
 
     # 点击计算出的中心点坐标
     print(center_x, center_y)
+    is_clickable_val = await is_clickable(page, center_x, center_y)
     plot_bbox([int(center_x - width_x / 2), int(center_y - height_y / 2), int(width_x), int(height_y)])
 
     if action in {'Click', 'Right Click', 'Type'}:
@@ -97,7 +116,7 @@ async def operate_relative_bbox_center(page, code, action, is_right=False):
     else:
         raise NotImplementedError()
 
-    return dino_prompt, relative_bbox
+    return dino_prompt, relative_bbox, is_clickable_val
 
 
 def call_dino(instruction, screenshot_path):
@@ -122,25 +141,31 @@ async def execution(content, page):
     if code.startswith('do'):
         action = re.search(r'action="(.*?)"', code).group(1)
         if action == 'Click':
-            instruction, bbox = await operate_relative_bbox_center(page, code, action)
-            return {"operation": "do", "action": action, "kwargs": {"instruction": instruction}, "bbox": bbox}
+            instruction, bbox, is_clickable_val = await operate_relative_bbox_center(page, code, action)
+            return {"operation": "do", "action": action, "kwargs": {"instruction": instruction}, "bbox": bbox,
+                    "is_not_clickable": not is_clickable_val}
         elif action == 'Right Click':
-            instruction, bbox = await operate_relative_bbox_center(page, code, action, is_right=True)
-            return {"operation": "do", "action": action, "kwargs": {"instruction": instruction}, "bbox": bbox}
+            instruction, bbox, is_clickable_val = await operate_relative_bbox_center(page, code, action, is_right=True)
+            return {"operation": "do", "action": action, "kwargs": {"instruction": instruction}, "bbox": bbox,
+                    "is_not_clickable": not is_clickable_val}
         elif action == 'Type':
-            instruction, bbox = await operate_relative_bbox_center(page, code, action)
+            instruction, bbox, is_clickable_val = await operate_relative_bbox_center(page, code, action)
             argument = re.search(r'argument="(.*?)"', code).group(1)
             print("Argument: " + argument)
             await page.keyboard.press('Meta+A')
             await page.keyboard.press('Backspace')
             await page.keyboard.type(argument)
             return {"operation": "do", "action": action, "kwargs": {"argument": argument, "instruction": instruction},
-                    "bbox": bbox}
+                    "bbox": bbox, "is_not_clickable": not is_clickable_val}
         elif action == 'Hover':
-            instruction, bbox = await operate_relative_bbox_center(page, code, action)
-            return {"operation": "do", "action": action, "kwargs": {"instruction": instruction}, "bbox": bbox}
+            instruction, bbox, is_clickable_val = await operate_relative_bbox_center(page, code, action)
+            return {"operation": "do", "action": action, "kwargs": {"instruction": instruction}, "bbox": bbox,
+                    "is_not_clickable": not is_clickable_val}
         elif action == 'Scroll Down':
             await page.mouse.wheel(0, page.viewport_size['height'] / 3 * 2)
+            return {"operation": "do", "action": action}
+        elif action == 'Go Backward':
+            await page.goBack()
             return {"operation": "do", "action": action}
         elif action == 'Scroll Up':
             await page.mouse.wheel(0, -page.viewport_size['height'] / 3 * 2)
@@ -221,6 +246,14 @@ async def run(playwright: Playwright, instruction=None, _id=None, url=None, scre
             context.on("page", capture_new_page)
 
             exe_res = await execution(content, page)
+
+            # If operating on unclickable element
+            if exe_res.get('is_not_clickable') is not None:
+                if exe_res['is_not_clickable']:
+                    HISTORY += '\n* Operation feedback: the element is plain text or not clickable.'
+                    print("* Operation feedback: the element is plain text or not clickable.")
+                else:
+                    print("* Operation feedback: the element is clickable.")
             record.update_execution(exe_res)
             if exe_res['operation'] == 'exit':
                 break
@@ -243,7 +276,8 @@ async def run(playwright: Playwright, instruction=None, _id=None, url=None, scre
                         "turns": TURN_NUMBER}
         record.update_execution(None)
     except:
-        final_status = {"status": 1, "reason": "Undefined failure during operation.", "traceback": traceback.format_exc(),
+        final_status = {"status": 1, "reason": "Undefined failure during operation.",
+                        "traceback": traceback.format_exc(),
                         "turns": TURN_NUMBER}
         record.update_execution(None)
 
@@ -255,6 +289,7 @@ async def run(playwright: Playwright, instruction=None, _id=None, url=None, scre
 
     with open(f'{record_temp}/status.json', 'w') as f:
         json.dump(final_status, f, ensure_ascii=False, indent=4)
+    print(final_status)
 
 
 async def main(instruction=None, _id=None, url=None, screenshot_temp=None, record_temp=None):

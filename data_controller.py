@@ -14,7 +14,7 @@ class DataController:
         self.base_dir = f'/Users/shaw/Downloads/{dataset_name}'
         os.makedirs(f'{self.base_dir}', exist_ok=True)
 
-        self.file_paths = [f"{data_dir}/{filename}" for filename in os.listdir(self.data_dir)][:3]
+        self.file_paths = [f"{data_dir}/{filename}" for filename in os.listdir(self.data_dir)][1:3]
 
         self.semaphore = asyncio.Semaphore(self.concurrency)  # Limit concurrent tasks
         self.tasks = []
