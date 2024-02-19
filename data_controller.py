@@ -11,7 +11,7 @@ class DataController:
         self.data_dir = data_dir
         self.concurrency = concurrency
         self.dataset_name = dataset_name
-        self.base_dir = f'~/Downloads/{dataset_name}'
+        self.base_dir = f'/Users/shaw/Downloads/{dataset_name}'
         os.makedirs(f'{self.base_dir}', exist_ok=True)
 
         self.file_paths = [f"{data_dir}/{filename}" for filename in os.listdir(self.data_dir)][:3]
