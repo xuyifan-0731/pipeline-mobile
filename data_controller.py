@@ -14,7 +14,7 @@ class DataController:
         self.base_dir = f'/Users/shaw/Downloads/{dataset_name}'
         os.makedirs(f'{self.base_dir}', exist_ok=True)
 
-        self.file_paths = [f"{data_dir}/{filename}" for filename in os.listdir(self.data_dir)][1:3]
+        self.file_paths = [f"{data_dir}/{filename}" for filename in os.listdir(self.data_dir)][4:]
 
         self.semaphore = asyncio.Semaphore(self.concurrency)  # Limit concurrent tasks
         self.tasks = []
@@ -36,7 +36,10 @@ class DataController:
 
     async def run_all(self):
         for index, file_path in enumerate(self.file_paths):
-            doc = json.load(open(file_path))
+            try:
+                doc = json.load(open(file_path))
+            except:
+                continue
             task = asyncio.create_task(self.run_single(index, doc))
             self.tasks.append(task)
 

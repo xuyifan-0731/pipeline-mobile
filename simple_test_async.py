@@ -6,6 +6,8 @@ from Pipeline.gpt4v import OpenaiEngine
 from collections import defaultdict
 
 import requests
+import imagehash
+import PIL
 import re
 import time
 import cv2
@@ -78,6 +80,11 @@ async def is_clickable(page, x, y):
     ''')
 
 
+def check_screenshot_the_same(screenshot_1, screenshot_2):
+    image1 = PIL.Image.open(screenshot_1)
+    image2 = PIL.Image.open(screenshot_2)
+    return imagehash.average_hash(image1) == imagehash.average_hash(image2)
+
 def plot_bbox(bbox):
     global CURRENT_SCREENSHOT
     assert CURRENT_SCREENSHOT is not None
@@ -105,7 +112,7 @@ async def operate_relative_bbox_center(page, code, action, is_right=False):
 
     # 点击计算出的中心点坐标
     print(center_x, center_y)
-    is_clickable_val = await is_clickable(page, center_x, center_y)
+    is_clickable_val = True  # await is_clickable(page, center_x, center_y)
     plot_bbox([int(center_x - width_x / 2), int(center_y - height_y / 2), int(width_x), int(height_y)])
 
     if action in {'Click', 'Right Click', 'Type'}:
@@ -165,7 +172,7 @@ async def execution(content, page):
             await page.mouse.wheel(0, page.viewport_size['height'] / 3 * 2)
             return {"operation": "do", "action": action}
         elif action == 'Go Backward':
-            await page.goBack()
+            await page.go_back()
             return {"operation": "do", "action": action}
         elif action == 'Scroll Up':
             await page.mouse.wheel(0, -page.viewport_size['height'] / 3 * 2)
@@ -245,29 +252,31 @@ async def run(playwright: Playwright, instruction=None, _id=None, url=None, scre
 
             context.on("page", capture_new_page)
 
+            # Do execution
             exe_res = await execution(content, page)
+            if exe_res['operation'] == 'exit':
+                break
+
+            # Get new screeshot
+            await page.screenshot(path="/dev/null")
+            time.sleep(3)
+            LAST_SCREENSHOT = CURRENT_SCREENSHOT
+            CURRENT_SCREENSHOT = f"{screenshot_temp}/screenshot-{time.time()}.png"
+            while new_page_captured:
+                time.sleep(0.1)
+            await page.screenshot(path=CURRENT_SCREENSHOT)
 
             # If operating on unclickable element
-            if exe_res.get('is_not_clickable') is not None:
-                if exe_res['is_not_clickable']:
+            if exe_res.get('action') in {'Click', 'Right Click', 'Type', 'Hover'}:
+                if check_screenshot_the_same(CURRENT_SCREENSHOT, LAST_SCREENSHOT):
                     HISTORY += '\n* Operation feedback: the element is plain text or not clickable.'
                     print("* Operation feedback: the element is plain text or not clickable.")
                 else:
                     print("* Operation feedback: the element is clickable.")
+
             record.update_execution(exe_res)
-            if exe_res['operation'] == 'exit':
-                break
-
             TURN_NUMBER += 1
-            # input("Continue? >>>")
 
-            # 保存截图
-            time.sleep(3)
-            CURRENT_SCREENSHOT = f"{screenshot_temp}/screenshot-{time.time()}.png"
-            await page.screenshot(path="/dev/null")
-            while new_page_captured:
-                time.sleep(0.1)
-            await page.screenshot(path=CURRENT_SCREENSHOT)
     except RepetitionException as e:
         final_status = {"status": 2, "reason": "Repetition captured.", "turns": TURN_NUMBER}
         record.update_execution(None)
