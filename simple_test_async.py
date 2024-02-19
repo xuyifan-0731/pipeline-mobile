@@ -36,7 +36,7 @@ class Record:
         self.hashed_actions = defaultdict(list)
 
     def check_abnormal_action(self, exe_res):
-        indexes = self.hashed_actions[str(exe_res)]
+        indexes = self.hashed_actions[str(self.contents[-1]['Analysis']) + str(exe_res)]
         return len(indexes) > 1 and indexes[-1] - indexes[-2] == TURN_NUMBER - indexes[-1]  # Repeition happens!
 
     def update_response(self, page, response, prompt="<|user|>\n** screenshot **"):
@@ -55,7 +55,7 @@ class Record:
             raise RepetitionException()
 
         self.contents[-1]['status'] = 0 if exe_res is not None else 1  # 1 refers to error in execution
-        self.hashed_actions[str(exe_res)].append(TURN_NUMBER)
+        self.hashed_actions[str(self.contents[-1]['Analysis']) + str(exe_res)].append(TURN_NUMBER)
         with open(self.file_path, 'a') as f:
             f.write(json.dumps(self.contents[-1], ensure_ascii=False) + '\n')
 

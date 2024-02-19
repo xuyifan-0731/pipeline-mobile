@@ -25,6 +25,7 @@ class DataController:
             if re.match(r"[A-Za-z0-9]", instruction[-1]):
                 instruction = instruction + '.'
             instruction = instruction + f' Start on {doc["url"]}'
+            print(instruction)
 
             screenshot_temp = f'{self.base_dir}/{doc["trace_id"]}/screenshots'
             record_temp = f'{self.base_dir}/{doc["trace_id"]}'
