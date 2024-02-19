@@ -175,10 +175,10 @@ async def run(playwright: Playwright, instruction=None, _id=None, url=None, scre
 
     # context = playwright.chromium.connect_over_cdp("ws://localhost:9222")
 
-    __USER_DATE_DIR_PATH__ = r'/Users/shaw/Library/Application Support/Google/Chrome/Default'  # 浏览器缓存(登录信息)/书签/个人偏好舍设置内容存储位置, 如下图
+    __USER_DATE_DIR_PATH__ = r'~/Library/Application Support/Google/Chrome/Default'  # 浏览器缓存(登录信息)/书签/个人偏好舍设置内容存储位置, 如下图
     __EXECUTABLE_PATH__ = r'/Applications/Google Chrome.app/Contents/MacOS/Google Chrome'  # 要使用的浏览器位置
 
-    playwright.chromium.set_default_navigation_timeout(60000)
+    # playwright.chromium.set_default_navigation_timeout(60000)
     context = await playwright.chromium.launch_persistent_context(
         user_data_dir=__USER_DATE_DIR_PATH__,  # 指定本机用户缓存地址
         executable_path=__EXECUTABLE_PATH__,  # 指定本机google客户端exe的路径
@@ -201,6 +201,7 @@ async def run(playwright: Playwright, instruction=None, _id=None, url=None, scre
 
     try:
         while TURN_NUMBER <= 100:
+            page.set_default_navigation_timeout(60000)
             content = openai_engine.generate(prompt=instruction, image_path=CURRENT_SCREENSHOT, turn_number=TURN_NUMBER,
                                              ouput__0=HISTORY)
             record.update_response(page, content)
