@@ -130,6 +130,18 @@ do(action="Scroll Down")
 * Operation:
 
 ```
+quote(content="Paper length\n\nThere will be a strict upper limit of 9 pages for the main text of the submission, with unlimited additional pages for citations. This page limit applies to both the initial and final camera ready version.")
+```
+
+<|user|>
+** screenshot **
+
+<|assistant|>
+## Round 6
+* Analysis: The quotation is enough to satisfy user's initial instruction. The task is ended.
+* Operation:
+
+```
 exit(message="According to the Call for Papers, the strict page limit is 9 in ICLR 2024.")
 ```
 

@@ -4,6 +4,7 @@ from playwright.sync_api import Playwright, sync_playwright
 from Pipeline.gpt4v import OpenaiEngine
 
 import requests
+import PIL.Image
 import re
 import time
 import cv2
@@ -43,6 +44,12 @@ def plot_bbox(bbox):
     image = cv2.imread(CURRENT_SCREENSHOT)
     cv2.rectangle(image, (bbox[0], bbox[1]), (bbox[0] + bbox[2], bbox[1] + bbox[3]), (0, 255, 0), 2)
     cv2.imwrite(CURRENT_SCREENSHOT.replace('.png', '-bbox.png'), image)
+
+
+def check_screenshot_the_same(screenshot_1, screenshot_2):
+    image1 = list(PIL.Image.open(screenshot_1).getdata())
+    image2 = list(PIL.Image.open(screenshot_2).getdata())
+    return image1 == image2
 
 
 def operate_relative_bbox_center(page, code, action, is_right=False):
@@ -197,16 +204,25 @@ def run(playwright: Playwright, instruction=None) -> None:
         if exe_res['operation'] == 'exit':
             break
 
-        TURN_NUMBER += 1
-        # input("Continue? >>>")
-
-        # 保存截图
-        time.sleep(3)
-        CURRENT_SCREENSHOT = f"temp/screenshot-{time.time()}.png"
+        # Get new screeshot
         page.screenshot(path="/dev/null")
+        time.sleep(3)
+        LAST_SCREENSHOT = CURRENT_SCREENSHOT
+        CURRENT_SCREENSHOT = f"temp/screenshot-{time.time()}.png"
         while new_page_captured:
             time.sleep(0.1)
         page.screenshot(path=CURRENT_SCREENSHOT)
+
+        # If operating on unclickable element
+        if exe_res.get('action') in {'Click', 'Right Click', 'Type', 'Hover'}:
+            if check_screenshot_the_same(CURRENT_SCREENSHOT, LAST_SCREENSHOT):
+                HISTORY += '\n* Operation feedback: the page does not change.'
+                print("* Operation feedback: the page does not change.")
+            else:
+                # print("* Operation feedback: the element is clickable.")
+                pass
+        record.update_execution(exe_res)
+        TURN_NUMBER += 1
 
 
 def main(instruction=None):
