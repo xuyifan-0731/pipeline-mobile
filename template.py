@@ -130,7 +130,7 @@ do(action="Scroll Down")
 * Operation:
 
 ```
-quote(content="Paper length\n\nThere will be a strict upper limit of 9 pages for the main text of the submission, with unlimited additional pages for citations. This page limit applies to both the initial and final camera ready version.")
+quote(content="Paper length\n\nThere will be a strict upper limit of 9 pages for the main text of the submission, with unlimited additional pages for citations. ")
 ```
 
 <|user|>

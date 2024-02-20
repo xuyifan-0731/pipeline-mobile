@@ -145,6 +145,10 @@ def execution(content, page):
     elif code.startswith('exit'):
         return {"operation": "exit",
                 "kwargs": {"message": re.search(r'message="(.*?)"', code).group(1) if 'exit()' not in code else ""}}
+    elif code.startswith('#'):
+        return {"operation": "pending"}
+    else:
+        raise NotImplementedError()
 
 
 # 创建浏览器
@@ -206,7 +210,7 @@ def run(playwright: Playwright, instruction=None) -> None:
 
         # Get new screeshot
         page.screenshot(path="/dev/null")
-        time.sleep(3)
+        time.sleep(6)
         LAST_SCREENSHOT = CURRENT_SCREENSHOT
         CURRENT_SCREENSHOT = f"temp/screenshot-{time.time()}.png"
         while new_page_captured:
@@ -216,8 +220,8 @@ def run(playwright: Playwright, instruction=None) -> None:
         # If operating on unclickable element
         if exe_res.get('action') in {'Click', 'Right Click', 'Type', 'Hover'}:
             if check_screenshot_the_same(CURRENT_SCREENSHOT, LAST_SCREENSHOT):
-                HISTORY += '\n* Operation feedback: the page does not change.'
-                print("* Operation feedback: the page does not change.")
+                HISTORY += '\n* Operation feedback: the page does not change. Try other element or description.'
+                print("* Operation feedback: the page does not change. Try other element or description.")
             else:
                 # print("* Operation feedback: the element is clickable.")
                 pass
