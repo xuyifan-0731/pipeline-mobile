@@ -48,5 +48,6 @@ class DataController:
 
 if __name__ == '__main__':
     controller = DataController(data_dir='/Volumes/data/clean_data_en-v1-split',
-                                dataset_name='clean_data_en-v1')
+                                dataset_name='clean_data_en-v1',
+                                concurrency=3)
     asyncio.run(controller.run_all())

@@ -17,10 +17,6 @@ import os
 
 openai_engine = OpenaiEngine()
 
-HISTORY = ""
-CURRENT_SCREENSHOT = None
-TURN_NUMBER = 0
-
 
 class RepetitionException(Exception):
     pass
@@ -37,12 +33,12 @@ class Record:
         self.contents = []
         self.hashed_actions = defaultdict(list)
 
-    def check_abnormal_action(self):
+    def check_abnormal_action(self, TURN_NUMBER):
         round_free_response = '\n'.join(self.contents[-1]['response'].split('\n')[1:])
         indexes = self.hashed_actions[round_free_response]
         return len(indexes) > 1 and indexes[-1] - indexes[-2] == TURN_NUMBER - indexes[-1]  # Repeition happens!
 
-    def update_response(self, page, response, prompt="<|user|>\n** screenshot **"):
+    def update_response(self, page, response, TURN_NUMBER, CURRENT_SCREENSHOT, prompt="<|user|>\n** screenshot **"):
         step = {
             "trace_id": self.id, "index": TURN_NUMBER,
             "prompt": prompt if TURN_NUMBER > 0 else f"<|user|>\n{self.instruction}", "image": CURRENT_SCREENSHOT,
@@ -50,15 +46,16 @@ class Record:
         }
         self.contents.append(step)
 
-    def update_execution(self, exe_res):
+    def update_execution(self, exe_res, TURN_NUMBER):
         self.contents[-1]['parsed_action'] = exe_res
 
         # check abnormal action (looping)
-        if self.check_abnormal_action():
+        if exe_res is not None and self.check_abnormal_action(TURN_NUMBER):
             raise RepetitionException()
 
         self.contents[-1]['status'] = 0 if exe_res is not None else 1  # 1 refers to error in execution
-        self.hashed_actions['\n'.join(self.contents[-1]['response'].split('\n')[1:])].append(TURN_NUMBER)
+        if exe_res is not None:
+            self.hashed_actions['\n'.join(self.contents[-1]['response'].split('\n')[1:])].append(TURN_NUMBER)
         with open(self.file_path, 'a') as f:
             f.write(json.dumps(self.contents[-1], ensure_ascii=False) + '\n')
 
@@ -85,16 +82,17 @@ def check_screenshot_the_same(screenshot_1, screenshot_2):
     image2 = PIL.Image.open(screenshot_2)
     return imagehash.average_hash(image1) == imagehash.average_hash(image2)
 
-def plot_bbox(bbox):
-    global CURRENT_SCREENSHOT
+
+def plot_bbox(bbox, CURRENT_SCREENSHOT):
+    # global CURRENT_SCREENSHOT
     assert CURRENT_SCREENSHOT is not None
     image = cv2.imread(CURRENT_SCREENSHOT)
     cv2.rectangle(image, (bbox[0], bbox[1]), (bbox[0] + bbox[2], bbox[1] + bbox[3]), (0, 255, 0), 2)
     cv2.imwrite(CURRENT_SCREENSHOT.replace('.png', '-bbox.png'), image)
 
 
-async def operate_relative_bbox_center(page, code, action, is_right=False):
-    global CURRENT_SCREENSHOT
+async def operate_relative_bbox_center(page, code, action, CURRENT_SCREENSHOT, is_right=False):
+    # global CURRENT_SCREENSHOT
     # 获取相对 bbox
     dino_prompt = re.search('find_element_by_instruction\(instruction="(.*?)"\)', code).group(1)
     relative_bbox = call_dino(dino_prompt, CURRENT_SCREENSHOT)
@@ -113,7 +111,8 @@ async def operate_relative_bbox_center(page, code, action, is_right=False):
     # 点击计算出的中心点坐标
     print(center_x, center_y)
     is_clickable_val = True  # await is_clickable(page, center_x, center_y)
-    plot_bbox([int(center_x - width_x / 2), int(center_y - height_y / 2), int(width_x), int(height_y)])
+    plot_bbox([int(center_x - width_x / 2), int(center_y - height_y / 2), int(width_x), int(height_y)],
+              CURRENT_SCREENSHOT)
 
     if action in {'Click', 'Right Click', 'Type'}:
         await page.mouse.click(center_x, center_y, button='right' if is_right else 'left')
@@ -133,8 +132,8 @@ def call_dino(instruction, screenshot_path):
     return [int(s) for s in response.json()['response'].split(',')]
 
 
-async def execution(content, page):
-    global CURRENT_SCREENSHOT
+async def execution(content, page, CURRENT_SCREENSHOT):
+    # global CURRENT_SCREENSHOT
     code = re.search(r'```.*?\n(.*?)\n.*?```', content)
     if code is None:
         raise RuntimeError()
@@ -148,15 +147,18 @@ async def execution(content, page):
     if code.startswith('do'):
         action = re.search(r'action="(.*?)"', code).group(1)
         if action == 'Click':
-            instruction, bbox, is_clickable_val = await operate_relative_bbox_center(page, code, action)
+            instruction, bbox, is_clickable_val = await operate_relative_bbox_center(page, code, action,
+                                                                                     CURRENT_SCREENSHOT)
             return {"operation": "do", "action": action, "kwargs": {"instruction": instruction}, "bbox": bbox,
                     "is_not_clickable": not is_clickable_val}
         elif action == 'Right Click':
-            instruction, bbox, is_clickable_val = await operate_relative_bbox_center(page, code, action, is_right=True)
+            instruction, bbox, is_clickable_val = await operate_relative_bbox_center(page, code, action,
+                                                                                     CURRENT_SCREENSHOT, is_right=True)
             return {"operation": "do", "action": action, "kwargs": {"instruction": instruction}, "bbox": bbox,
                     "is_not_clickable": not is_clickable_val}
         elif action == 'Type':
-            instruction, bbox, is_clickable_val = await operate_relative_bbox_center(page, code, action)
+            instruction, bbox, is_clickable_val = await operate_relative_bbox_center(page, code, action,
+                                                                                     CURRENT_SCREENSHOT)
             argument = re.search(r'argument="(.*?)"', code).group(1)
             print("Argument: " + argument)
             await page.keyboard.press('Meta+A')
@@ -165,7 +167,8 @@ async def execution(content, page):
             return {"operation": "do", "action": action, "kwargs": {"argument": argument, "instruction": instruction},
                     "bbox": bbox, "is_not_clickable": not is_clickable_val}
         elif action == 'Hover':
-            instruction, bbox, is_clickable_val = await operate_relative_bbox_center(page, code, action)
+            instruction, bbox, is_clickable_val = await operate_relative_bbox_center(page, code, action,
+                                                                                     CURRENT_SCREENSHOT)
             return {"operation": "do", "action": action, "kwargs": {"instruction": instruction}, "bbox": bbox,
                     "is_not_clickable": not is_clickable_val}
         elif action == 'Scroll Down':
@@ -198,7 +201,7 @@ async def execution(content, page):
 # 创建浏览器
 async def run(playwright: Playwright, instruction=None, _id=None, url=None, screenshot_temp='temp',
               record_temp=None) -> None:
-    global HISTORY, CURRENT_SCREENSHOT, TURN_NUMBER
+    # global HISTORY, CURRENT_SCREENSHOT, TURN_NUMBER
     # 创建浏览器
     # user_data_dir = '/Users/shaw/Library/Application Support/Google/Chrome/Default'
     # executable_path = '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome'
@@ -215,7 +218,7 @@ async def run(playwright: Playwright, instruction=None, _id=None, url=None, scre
         user_data_dir=__USER_DATE_DIR_PATH__,  # 指定本机用户缓存地址
         executable_path=__EXECUTABLE_PATH__,  # 指定本机google客户端exe的路径
         accept_downloads=True,  # 要想通过这个下载文件这个必然要开  默认是False
-        headless=False,
+        headless=True,
         # no_viewport=True,                                      #  no_viewport=True '--start-maximized'同时存在,窗口最大化
         args=['--start-maximized', '--disable-blink-features=AutomationControlled'],  # 跳过检测
     )
@@ -226,6 +229,10 @@ async def run(playwright: Playwright, instruction=None, _id=None, url=None, scre
 
     # 每个 content 就是一个会话窗口，可以创建自己的页面，也就是浏览器上的 tab 栏，在每个会话窗口中，可以创建多个页面，也就是多个 tab 栏
     # 例如：page1 = content.new_page()、page2 = content.new_page() 封面去访问页面
+    HISTORY = ""
+    CURRENT_SCREENSHOT = None
+    TURN_NUMBER = 0
+
     page = await context.new_page()
     instruction = input("What would you like to do? >>> ") if instruction is None else instruction
     record = Record(instruction=instruction, url=url, _id=_id, save_path=record_temp)
@@ -233,10 +240,10 @@ async def run(playwright: Playwright, instruction=None, _id=None, url=None, scre
 
     try:
         while TURN_NUMBER <= 100:
-            page.set_default_navigation_timeout(60000)
+            page.set_default_timeout(60000)
             content = openai_engine.generate(prompt=instruction, image_path=CURRENT_SCREENSHOT, turn_number=TURN_NUMBER,
                                              ouput__0=HISTORY)
-            record.update_response(page, content)
+            record.update_response(page, content, CURRENT_SCREENSHOT=CURRENT_SCREENSHOT, TURN_NUMBER=TURN_NUMBER)
             HISTORY += content
             print(content)
 
@@ -253,7 +260,7 @@ async def run(playwright: Playwright, instruction=None, _id=None, url=None, scre
             context.on("page", capture_new_page)
 
             # Do execution
-            exe_res = await execution(content, page)
+            exe_res = await execution(content, page, CURRENT_SCREENSHOT)
             if exe_res['operation'] == 'exit':
                 break
 
@@ -270,25 +277,25 @@ async def run(playwright: Playwright, instruction=None, _id=None, url=None, scre
             if exe_res.get('action') in {'Click', 'Right Click', 'Type', 'Hover'}:
                 if check_screenshot_the_same(CURRENT_SCREENSHOT, LAST_SCREENSHOT):
                     HISTORY += '\n* Operation feedback: the element is plain text or not clickable.'
-                    print("* Operation feedback: the element is plain text or not clickable.")
+                    print("* Operation feedback: the page does not change.")
                 else:
-                    print("* Operation feedback: the element is clickable.")
-
-            record.update_execution(exe_res)
+                    # print("* Operation feedback: the element is clickable.")
+                    pass
+            record.update_execution(exe_res, TURN_NUMBER)
             TURN_NUMBER += 1
 
     except RepetitionException as e:
         final_status = {"status": 2, "reason": "Repetition captured.", "turns": TURN_NUMBER}
-        record.update_execution(None)
+        record.update_execution(None, TURN_NUMBER)
     except NotImplementedError as e:
         final_status = {"status": 1, "reason": "Not implemented action.", "traceback": traceback.format_exc(),
                         "turns": TURN_NUMBER}
-        record.update_execution(None)
+        record.update_execution(None, TURN_NUMBER)
     except:
         final_status = {"status": 1, "reason": "Undefined failure during operation.",
                         "traceback": traceback.format_exc(),
                         "turns": TURN_NUMBER}
-        record.update_execution(None)
+        record.update_execution(None, TURN_NUMBER)
 
     if len(final_status) == 0:
         if TURN_NUMBER > 100:

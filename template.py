@@ -44,7 +44,7 @@ def quote(content):
     """Quoting information from the current webpage for memory.
     
     Args:
-        :param content: text summarized or copied from the webpage for later reorganizing.
+        :param content: text summarized or copied from the webpage for later reorganizing. But don't do it successively.
     
     Returns:
         None.
@@ -134,7 +134,7 @@ exit(message="According to the Call for Papers, the strict page limit is 9 in IC
 ```
 
 REMEMBER: 
-- only **ONE-LINE-OF-CODE** at a time
-- Don't generate an operation element that you do not see in the screenshot.
-- After quote action, don't forget to **DO OTHER ACTION** in the next round!
+- Only **ONE-LINE-OF-CODE** at a time
+- Don't generate an operation element that you do not really see in the screenshot.
+- Do other actions after the quoting round.
 '''
