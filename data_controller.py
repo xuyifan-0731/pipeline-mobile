@@ -2,6 +2,7 @@ import json
 import os
 import re
 import asyncio
+import shutil
 
 from Pipeline.simple_test_async import main
 
@@ -14,7 +15,8 @@ class DataController:
         self.base_dir = f'/Users/shaw/Downloads/{dataset_name}'
         os.makedirs(f'{self.base_dir}', exist_ok=True)
 
-        self.file_paths = [f"{data_dir}/{filename}" for filename in os.listdir(self.data_dir)][4:]
+        self.file_paths = [f"{data_dir}/{filename}" for filename in os.listdir(self.data_dir)]
+        print("Total:", len(self.file_paths))
 
         self.semaphore = asyncio.Semaphore(self.concurrency)  # Limit concurrent tasks
         self.tasks = []
@@ -38,6 +40,11 @@ class DataController:
         for index, file_path in enumerate(self.file_paths):
             try:
                 doc = json.load(open(file_path))
+                if os.path.exists(f'{self.base_dir}/{doc["trace_id"]}'):
+                    if os.path.exists(f'{self.base_dir}/{doc["trace_id"]}/status.json'):
+                        continue
+                    else:
+                        shutil.rmtree(f'{self.base_dir}/{doc["trace_id"]}')
             except:
                 continue
             task = asyncio.create_task(self.run_single(index, doc))
@@ -49,5 +56,5 @@ class DataController:
 if __name__ == '__main__':
     controller = DataController(data_dir='/Volumes/data/clean_data_en-v1-split',
                                 dataset_name='clean_data_en-v1',
-                                concurrency=3)
+                                concurrency=5)
     asyncio.run(controller.run_all())

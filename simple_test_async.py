@@ -6,8 +6,7 @@ from Pipeline.gpt4v import OpenaiEngine
 from collections import defaultdict
 
 import requests
-import imagehash
-import PIL
+import PIL.Image
 import re
 import time
 import cv2
@@ -78,9 +77,9 @@ async def is_clickable(page, x, y):
 
 
 def check_screenshot_the_same(screenshot_1, screenshot_2):
-    image1 = PIL.Image.open(screenshot_1)
-    image2 = PIL.Image.open(screenshot_2)
-    return imagehash.average_hash(image1) == imagehash.average_hash(image2)
+    image1 = list(PIL.Image.open(screenshot_1).getdata())
+    image2 = list(PIL.Image.open(screenshot_2).getdata())
+    return image1 == image2
 
 
 def plot_bbox(bbox, CURRENT_SCREENSHOT):
