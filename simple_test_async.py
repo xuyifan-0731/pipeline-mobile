@@ -58,6 +58,13 @@ class Record:
         with open(self.file_path, 'a') as f:
             f.write(json.dumps(self.contents[-1], ensure_ascii=False) + '\n')
 
+    def format_history(self):
+        history = []
+        for turn in self.contents:
+            history.append({"role": "user", "content": [{"type": "text", "text": turn['prompt']}]})
+            history.append({"role": "assistant", "content": [{"type": "text", "text": turn['response']}]})
+        return history
+
 
 async def is_clickable(page, x, y):
     return await page.evaluate(f'''
@@ -113,7 +120,7 @@ async def operate_relative_bbox_center(page, code, action, CURRENT_SCREENSHOT, i
     plot_bbox([int(center_x - width_x / 2), int(center_y - height_y / 2), int(width_x), int(height_y)],
               CURRENT_SCREENSHOT)
 
-    if action in {'Click', 'Right Click', 'Type'}:
+    if action in {'Click', 'Right Click', 'Type', 'Search'}:
         await page.mouse.click(center_x, center_y, button='right' if is_right else 'left')
     elif action == 'Hover':
         await page.mouse.move(center_x, center_y)
@@ -155,7 +162,7 @@ async def execution(content, page, CURRENT_SCREENSHOT):
                                                                                      CURRENT_SCREENSHOT, is_right=True)
             return {"operation": "do", "action": action, "kwargs": {"instruction": instruction}, "bbox": bbox,
                     "is_not_clickable": not is_clickable_val}
-        elif action == 'Type':
+        elif action in {'Type', 'Search'}:
             instruction, bbox, is_clickable_val = await operate_relative_bbox_center(page, code, action,
                                                                                      CURRENT_SCREENSHOT)
             argument = re.search(r'argument="(.*?)"', code).group(1)
@@ -163,6 +170,8 @@ async def execution(content, page, CURRENT_SCREENSHOT):
             await page.keyboard.press('Meta+A')
             await page.keyboard.press('Backspace')
             await page.keyboard.type(argument)
+            if action == 'Search':
+                await page.keyboard.press('Enter')
             return {"operation": "do", "action": action, "kwargs": {"argument": argument, "instruction": instruction},
                     "bbox": bbox, "is_not_clickable": not is_clickable_val}
         elif action == 'Hover':
@@ -228,7 +237,6 @@ async def run(playwright: Playwright, instruction=None, _id=None, url=None, scre
 
     # 每个 content 就是一个会话窗口，可以创建自己的页面，也就是浏览器上的 tab 栏，在每个会话窗口中，可以创建多个页面，也就是多个 tab 栏
     # 例如：page1 = content.new_page()、page2 = content.new_page() 封面去访问页面
-    HISTORY = ""
     CURRENT_SCREENSHOT = None
     TURN_NUMBER = 0
 
@@ -241,9 +249,8 @@ async def run(playwright: Playwright, instruction=None, _id=None, url=None, scre
         while TURN_NUMBER <= 100:
             page.set_default_timeout(60000)
             content = openai_engine.generate(prompt=instruction, image_path=CURRENT_SCREENSHOT, turn_number=TURN_NUMBER,
-                                             ouput__0=HISTORY)
+                                             ouput__0=record.format_history())
             record.update_response(page, content, CURRENT_SCREENSHOT=CURRENT_SCREENSHOT, TURN_NUMBER=TURN_NUMBER)
-            HISTORY += content
             print(content)
 
             new_page_captured = False
@@ -273,13 +280,13 @@ async def run(playwright: Playwright, instruction=None, _id=None, url=None, scre
             await page.screenshot(path=CURRENT_SCREENSHOT)
 
             # If operating on unclickable element
-            if exe_res.get('action') in {'Click', 'Right Click', 'Type', 'Hover'}:
-                if check_screenshot_the_same(CURRENT_SCREENSHOT, LAST_SCREENSHOT):
-                    HISTORY += '\n* Operation feedback: the element is plain text or not clickable.'
-                    print("* Operation feedback: the page does not change.")
-                else:
-                    # print("* Operation feedback: the element is clickable.")
-                    pass
+            # if exe_res.get('action') in {'Click', 'Right Click', 'Type', 'Hover'}:
+            #     if check_screenshot_the_same(CURRENT_SCREENSHOT, LAST_SCREENSHOT):
+            #         HISTORY += '\n* Operation feedback: the element is plain text or not clickable.'
+            #         print("* Operation feedback: the page does not change.")
+            #     else:
+            #         # print("* Operation feedback: the element is clickable.")
+            #         pass
             record.update_execution(exe_res, TURN_NUMBER)
             TURN_NUMBER += 1
 

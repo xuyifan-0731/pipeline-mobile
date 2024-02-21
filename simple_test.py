@@ -4,7 +4,6 @@ from playwright.sync_api import Playwright, sync_playwright
 from Pipeline.gpt4v import OpenaiEngine
 
 import requests
-import PIL.Image
 import re
 import time
 import cv2
@@ -12,7 +11,6 @@ import os
 
 openai_engine = OpenaiEngine()
 
-HISTORY = ""
 CURRENT_SCREENSHOT = None
 TURN_NUMBER = 0
 
@@ -37,6 +35,13 @@ class Record:
         with open(self.file_path, 'a') as f:
             f.write(json.dumps(self.contents[-1], ensure_ascii=False) + '\n')
 
+    def format_history(self):
+        history = []
+        for turn in self.contents:
+            history.append({"role": "user", "content": [{"type": "text", "text": turn['prompt']}]})
+            history.append({"role": "assistant", "content": [{"type": "text", "text": turn['response']}]})
+        return history
+
 
 def plot_bbox(bbox):
     global CURRENT_SCREENSHOT
@@ -44,12 +49,6 @@ def plot_bbox(bbox):
     image = cv2.imread(CURRENT_SCREENSHOT)
     cv2.rectangle(image, (bbox[0], bbox[1]), (bbox[0] + bbox[2], bbox[1] + bbox[3]), (0, 255, 0), 2)
     cv2.imwrite(CURRENT_SCREENSHOT.replace('.png', '-bbox.png'), image)
-
-
-def check_screenshot_the_same(screenshot_1, screenshot_2):
-    image1 = list(PIL.Image.open(screenshot_1).getdata())
-    image2 = list(PIL.Image.open(screenshot_2).getdata())
-    return image1 == image2
 
 
 def operate_relative_bbox_center(page, code, action, is_right=False):
@@ -60,7 +59,7 @@ def operate_relative_bbox_center(page, code, action, is_right=False):
 
     # 获取页面的视口大小
     viewport_size = page.viewport_size
-    print(viewport_size)
+    # print(viewport_size)
     viewport_width = viewport_size['width']
     viewport_height = viewport_size['height']
 
@@ -70,10 +69,10 @@ def operate_relative_bbox_center(page, code, action, is_right=False):
     height_y = (relative_bbox[3] - relative_bbox[1]) * viewport_height / 100
 
     # 点击计算出的中心点坐标
-    print(center_x, center_y)
+    # print(center_x, center_y)
     plot_bbox([int(center_x - width_x / 2), int(center_y - height_y / 2), int(width_x), int(height_y)])
 
-    if action in {'Click', 'Right Click', 'Type'}:
+    if action in {'Click', 'Right Click', 'Type', 'Search'}:
         page.mouse.click(center_x, center_y, button='right' if is_right else 'left')
     elif action == 'Hover':
         page.mouse.move(center_x, center_y)
@@ -111,13 +110,15 @@ def execution(content, page):
         elif action == 'Right Click':
             instruction, bbox = operate_relative_bbox_center(page, code, action, is_right=True)
             return {"operation": "do", "action": action, "kwargs": {"instruction": instruction}, "bbox": bbox}
-        elif action == 'Type':
+        elif action in {'Type', 'Search'}:
             instruction, bbox = operate_relative_bbox_center(page, code, action)
             argument = re.search(r'argument="(.*?)"', code).group(1)
             print("Argument: " + argument)
             page.keyboard.press('Meta+A')
             page.keyboard.press('Backspace')
             page.keyboard.type(argument)
+            if action == 'Search':
+                page.keyboard.press('Enter')
             return {"operation": "do", "action": action, "kwargs": {"argument": argument, "instruction": instruction},
                     "bbox": bbox}
         elif action == 'Hover':
@@ -145,15 +146,11 @@ def execution(content, page):
     elif code.startswith('exit'):
         return {"operation": "exit",
                 "kwargs": {"message": re.search(r'message="(.*?)"', code).group(1) if 'exit()' not in code else ""}}
-    elif code.startswith('#'):
-        return {"operation": "pending"}
-    else:
-        raise NotImplementedError()
 
 
 # 创建浏览器
 def run(playwright: Playwright, instruction=None) -> None:
-    global HISTORY, CURRENT_SCREENSHOT, TURN_NUMBER
+    global CURRENT_SCREENSHOT, TURN_NUMBER
     # 创建浏览器
     # user_data_dir = '/Users/shaw/Library/Application Support/Google/Chrome/Default'
     # executable_path = '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome'
@@ -186,9 +183,8 @@ def run(playwright: Playwright, instruction=None) -> None:
 
     while TURN_NUMBER <= 100:
         content = openai_engine.generate(prompt=instruction, image_path=CURRENT_SCREENSHOT, turn_number=TURN_NUMBER,
-                                         ouput__0=HISTORY)
+                                         ouput__0=record.format_history())
         record.update_response(page, content)
-        HISTORY += content
         print(content)
 
         new_page_captured = False
@@ -208,25 +204,17 @@ def run(playwright: Playwright, instruction=None) -> None:
         if exe_res['operation'] == 'exit':
             break
 
-        # Get new screeshot
-        page.screenshot(path="/dev/null")
-        time.sleep(6)
-        LAST_SCREENSHOT = CURRENT_SCREENSHOT
+        TURN_NUMBER += 1
+        # input("Continue? >>>")
+
+        # 保存截图
+        time.sleep(3)
         CURRENT_SCREENSHOT = f"temp/screenshot-{time.time()}.png"
+        _ = page.viewport_size
+        page.screenshot(path="/dev/null")
         while new_page_captured:
             time.sleep(0.1)
         page.screenshot(path=CURRENT_SCREENSHOT)
-
-        # If operating on unclickable element
-        if exe_res.get('action') in {'Click', 'Right Click', 'Type', 'Hover'}:
-            if check_screenshot_the_same(CURRENT_SCREENSHOT, LAST_SCREENSHOT):
-                HISTORY += '\n* Operation feedback: the page does not change. Try other element or description.'
-                print("* Operation feedback: the page does not change. Try other element or description.")
-            else:
-                # print("* Operation feedback: the element is clickable.")
-                pass
-        record.update_execution(exe_res)
-        TURN_NUMBER += 1
 
 
 def main(instruction=None):

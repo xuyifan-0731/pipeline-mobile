@@ -75,7 +75,7 @@ class OpenaiEngine(Engine):
         (APIError, RateLimitError, APIConnectionError, ServiceUnavailableError, InvalidRequestError),
     )
     def generate(self, prompt: str, max_new_tokens=4096, temperature=None, model=None, image_path=None,
-                 ouput__0=None, turn_number=0, **kwargs):
+                 ouput__0=None, turn_number=0, current_feedback=None, **kwargs):
         start_time = time.time()
         if (
                 self.request_interval > 0
@@ -101,13 +101,13 @@ class OpenaiEngine(Engine):
             return answer1
         elif turn_number > 0:
             base64_image = encode_image(image_path)
-            prompt2_input = [
-                {"role": "system", "content": [{"type": "text", "text": SYSTEM_PROMPT}]},
-                {"role": "user", "content": [{"type": "text", "text": prompt}]},
-                {"role": "assistant", "content": [{"type": "text", "text": f"\n\n{ouput__0}"}]},
-                {"role": "user", "content": [{"type": "image_url",
-                                              "image_url": {"url": f"data:image/jpeg;base64,{base64_image}",
-                                                            "detail": "high"}, }]}, ]
+            prompt2_input = [{"role": "system", "content": [{"type": "text", "text": SYSTEM_PROMPT}]}] + \
+                            ouput__0 + [{"role": "user", "content": [{"type": "image_url",
+                                                                      "image_url": {
+                                                                          "url": f"data:image/jpeg;base64,{base64_image}",
+                                                                          "detail": "high"}, }]}]
+            # if current_feedback is not None:
+            #     prompt2_input[-1]["content"].append({"type": "text", "text": current_feedback})
             response2 = openai.ChatCompletion.create(
                 model=model if model else self.model,
                 messages=prompt2_input,
