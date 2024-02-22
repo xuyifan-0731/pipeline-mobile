@@ -14,12 +14,19 @@ openai_engine = OpenaiEngine()
 CURRENT_SCREENSHOT = None
 TURN_NUMBER = 0
 
+TRACE_DIR = os.environ.get('TRACE_DIR')
+SCREENSHOT_DIR = os.environ.get('SCREENSHOT_DIR')
+if TRACE_DIR is None:
+    TRACE_DIR = '../traces'
+if SCREENSHOT_DIR is None:
+    SCREENSHOT_DIR = '../temp'
+
 
 class Record:
     def __init__(self, instruction):
         self.id = int(time.time())
         self.instruction = instruction
-        self.file_path = f'/Users/shaw/Desktop/Research/MegaPilot/UI-Detector/traces/{self.id}.jsonl'
+        self.file_path = f'{TRACE_DIR}/{self.id}.jsonl'
         self.contents = []
 
     def update_response(self, page, response, prompt="<|user|>\n** screenshot **"):
@@ -152,14 +159,7 @@ def execution(content, page):
 def run(playwright: Playwright, instruction=None) -> None:
     global CURRENT_SCREENSHOT, TURN_NUMBER
     # 创建浏览器
-    # user_data_dir = '/Users/shaw/Library/Application Support/Google/Chrome/Default'
-    # executable_path = '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome'
-    # context = playwright.chromium.launch_persistent_context(user_data_dir, executable_path=executable_path,
-    #                                                         headless=False)
-
-    # context = playwright.chromium.connect_over_cdp("ws://localhost:9222")
-
-    __USER_DATE_DIR_PATH__ = r'/Users/shaw/Library/Application Support/Google/Chrome/Default'  # 浏览器缓存(登录信息)/书签/个人偏好舍设置内容存储位置, 如下图
+    __USER_DATE_DIR_PATH__ = f'/Users/{os.getlogin()}/Library/Application Support/Google/Chrome/Default'  # 浏览器缓存(登录信息)/书签/个人偏好舍设置内容存储位置, 如下图
     __EXECUTABLE_PATH__ = r'/Applications/Google Chrome.app/Contents/MacOS/Google Chrome'  # 要使用的浏览器位置
 
     context = playwright.chromium.launch_persistent_context(

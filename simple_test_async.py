@@ -24,7 +24,7 @@ class RepetitionException(Exception):
 class Record:
     def __init__(self, instruction, url=None, _id=None, save_path=None):
         if save_path is None:
-            save_path = '/Users/shaw/Desktop/Research/MegaPilot/UI-Detector/traces'
+            save_path = f'../traces'
         self.id = int(time.time()) if _id is None else _id
         self.instruction = instruction
         self.url = url
@@ -211,14 +211,7 @@ async def run(playwright: Playwright, instruction=None, _id=None, url=None, scre
               record_temp=None) -> None:
     # global HISTORY, CURRENT_SCREENSHOT, TURN_NUMBER
     # 创建浏览器
-    # user_data_dir = '/Users/shaw/Library/Application Support/Google/Chrome/Default'
-    # executable_path = '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome'
-    # context = playwright.chromium.launch_persistent_context(user_data_dir, executable_path=executable_path,
-    #                                                         headless=False)
-
-    # context = playwright.chromium.connect_over_cdp("ws://localhost:9222")
-
-    __USER_DATE_DIR_PATH__ = r'/Users/shaw/Library/Application Support/Google/Chrome/Default'  # 浏览器缓存(登录信息)/书签/个人偏好舍设置内容存储位置, 如下图
+    __USER_DATE_DIR_PATH__ = f'/Users/{os.getlogin()}/Library/Application Support/Google/Chrome/Default'  # 浏览器缓存(登录信息)/书签/个人偏好舍设置内容存储位置, 如下图
     __EXECUTABLE_PATH__ = r'/Applications/Google Chrome.app/Contents/MacOS/Google Chrome'  # 要使用的浏览器位置
 
     # playwright.chromium.set_default_navigation_timeout(60000)
