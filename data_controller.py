@@ -1,3 +1,4 @@
+import getpass
 import json
 import os
 import re
@@ -12,7 +13,7 @@ class DataController:
         self.data_dir = data_dir
         self.concurrency = concurrency
         self.dataset_name = dataset_name
-        self.base_dir = f'/Users/{os.getlogin()}/Downloads/{dataset_name}'  # Default save to local download directory
+        self.base_dir = f'/Users/{getpass.getuser()}/Downloads/{dataset_name}'  # Default save to local download directory
         os.makedirs(f'{self.base_dir}', exist_ok=True)
 
         self.file_paths = [f"{data_dir}/{filename}" for filename in os.listdir(self.data_dir)]

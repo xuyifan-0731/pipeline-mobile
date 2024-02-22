@@ -211,7 +211,7 @@ async def run(playwright: Playwright, instruction=None, _id=None, url=None, scre
               record_temp=None) -> None:
     # global HISTORY, CURRENT_SCREENSHOT, TURN_NUMBER
     # 创建浏览器
-    __USER_DATE_DIR_PATH__ = f'/Users/{os.getlogin()}/Library/Application Support/Google/Chrome/Default'  # 浏览器缓存(登录信息)/书签/个人偏好舍设置内容存储位置, 如下图
+    __USER_DATE_DIR_PATH__ = f'/Users/{getpass.getuser()}/Library/Application Support/Google/Chrome/Default'  # 浏览器缓存(登录信息)/书签/个人偏好舍设置内容存储位置, 如下图
     __EXECUTABLE_PATH__ = r'/Applications/Google Chrome.app/Contents/MacOS/Google Chrome'  # 要使用的浏览器位置
 
     # playwright.chromium.set_default_navigation_timeout(60000)
