@@ -111,6 +111,8 @@ do(action="Click", argument=None, element=find_element_by_instruction(instructio
 
 <|user|>
 ** screenshot **
+
+<|assistant|>
 ## Round 3
 * Confirm: The screenshot shows that the browser has opened the Call for Papers of ICLR 2024.
 * Analysis: The screenshot does not yet contain the submission page limit. I should try scroll down to see if it is in the content below.
