@@ -102,7 +102,7 @@ do(action="Search", argument="ICLR 2024 submission page limit", element=find_ele
 <|assistant|>
 ## Round 2
 * Confirm: The screenshot shows that Google returns many related results, indicating that the search is successful.
-* Analysis: I think the result "2024 - Call For Papers" is likely to contain the nsubmission page limit of ICLR 2024. So I should click it.
+* Analysis: I think the result "2024 - Call For Papers" is likely to contain the submission page limit of ICLR 2024. So I should click it.
 * Operation:
 
 ```
