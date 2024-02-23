@@ -258,10 +258,10 @@ def main(instruction=None, auto_executor = True, history_path = None):
 if __name__ == '__main__':
     
     instruction = '''open the url http://172.16.64.65:9999/forums and comment to the first post in the r/books with my comment "can't stop it".'''
-    auto_executor = False
+    auto_executor = True
     
     # 恢复加载
-    reload_history = True
+    reload_history = False
     history_path = None
 
     if reload_history:

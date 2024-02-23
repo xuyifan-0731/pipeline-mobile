@@ -3,3 +3,4 @@ temp
 traces
 **/__pycache__
 test
+.env
