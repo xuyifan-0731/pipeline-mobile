@@ -62,9 +62,20 @@ class SyncVisualPageExecutor:
         self.page.screenshot(path=self.current_screenshot)
         print("Screenshot saved.")
 
+    def reach_page_bottom(self):
+        scroll_position = self.page.evaluate("window.pageYOffset")  # Current scroll position from the top
+        total_height = self.page.evaluate("document.body.scrollHeight")  # Total scrollable height
+        inner_height = self.page.evaluate("window.innerHeight")  # Height of the viewport
+
+        # Determine if scrolled to bottom
+        val = scroll_position + inner_height >= total_height
+        print(f"Call reach_page_bottom():\n{val}")
+        return val
+
     def open_url(self, url):
         self.page.goto(url)
         self.current_return = {"operation": "open_url", "kwargs": {"url": url}}
+        self.__update_screenshot__()
 
     def do(self, action=None, argument=None, element=None):
         if action == 'Click':
@@ -85,6 +96,7 @@ class SyncVisualPageExecutor:
             self.press_key(argument)
         else:
             raise NotImplementedError()
+        self.__update_screenshot__()
 
     def find_element_by_instruction(self, instruction):
         (center_x, center_y), bbox = get_relative_bbox_center(self.page, instruction, self.current_screenshot)
@@ -95,9 +107,11 @@ class SyncVisualPageExecutor:
 
     def quote(self, content):
         self.current_return = {"operation": "quote", "kwargs": {"content": content}}
+        self.__update_screenshot__()
 
     def exit(self, message=None):
         self.current_return = {"operation": "exit", "kwargs": {"message": message}}
+        self.__update_screenshot__()
 
     # Implement sub-actions of do
     def click(self, element):
@@ -123,9 +137,15 @@ class SyncVisualPageExecutor:
                                "bbox": bbox}
 
     def search(self, argument, element):
-        self.type(argument, element)
+        instruction, (center_x, center_y), bbox = element
+        self.page.mouse.click(center_x, center_y, button='left')
+        self.page.keyboard.press('Meta+A')
+        self.page.keyboard.press('Backspace')
+        self.page.keyboard.type(argument)
         self.page.keyboard.press('Enter')
-        self.current_return['action'] = 'Search'
+        self.current_return = {"operation": "do", "action": 'Search',
+                               "kwargs": {"argument": argument, "instruction": instruction},
+                               "bbox": bbox}
 
     def hover(self, element):
         instruction, (center_x, center_y), bbox = element

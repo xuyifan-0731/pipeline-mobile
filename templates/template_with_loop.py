@@ -53,6 +53,14 @@ def screenshot_satisfies(condition):
     Returns:
         bool value.
     """
+    
+    
+def reach_page_bottom():
+    """A bool function to judge if the current position is the page bottom. Used in `while` statement conditions.
+    
+    Returns:
+        bool value.
+    """
 
 
 def quote(content):
@@ -130,7 +138,7 @@ do(action="Click", argument=None, element=find_element_by_instruction(instructio
 * Operation:
 
 ```
-while not screenshot_satisfies(condition="the page contains information about 'page limit'"):
+while not screenshot_satisfies(condition="the page contains information about 'page limit'") and not reach_page_bottom():
     do(action="Scroll Down")
 ```
 
@@ -139,7 +147,7 @@ while not screenshot_satisfies(condition="the page contains information about 'p
 
 <|assistant|>
 ## Round 4
-* Confirm: The screenshot shows that the browser has scrolled down.
+* Confirm: The screenshot shows that the scrolling has stopped.
 * Analysis: The screenshot shows that the strict page limit is 9 page in ICLR 2024's submission. This should satisfy user's initial instruction. The task is ended.
 * Operation:
 
@@ -149,6 +157,7 @@ exit(message="According to the Call for Papers, the strict page limit is 9 in IC
 
 REMEMBER: 
 - only **ONE-LINE-OF-CODE** at a time, except for while statement.
+- Try `while` statement for intention that might involve multiple time scrolling down. If you find your self doing 'Scroll Down' twice in the execution, launch `while` for continuous scrolling.
 - Don't generate an operation element that you do not see in the screenshot.
 - After quote action, don't forget to **DO OTHER ACTION** in the next round!
 - If you find yourself fallen into some sort of loop, try to use another method or change your action.

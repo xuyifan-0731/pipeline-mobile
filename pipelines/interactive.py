@@ -52,13 +52,13 @@ def run(playwright: Playwright, instruction=None) -> None:
 
         record.turn_number += 1
         # input("Continue? >>>")
-        page_executor.__update_screenshot__()
+        # page_executor.__update_screenshot__()
 
 
 def main(instruction=None):
     with sync_playwright() as playwright:
-        run(playwright)
+        run(playwright, instruction=instruction)
 
 
 if __name__ == '__main__':
-    main()
+    main('Browse and list 3 latest paper authored by Google tweeted by my friend Aran Komatsuzaki on twitter. Start from twitter and find his profile.')
