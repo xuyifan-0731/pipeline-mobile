@@ -9,7 +9,7 @@ from openai.error import (
     ServiceUnavailableError,
     InvalidRequestError
 )
-from template import SYSTEM_PROMPT
+from .templates.template import SYSTEM_PROMPT
 
 import base64
 from dotenv import load_dotenv
@@ -73,6 +73,29 @@ class OpenaiEngine(Engine):
     def encode_image(self, image_path):
         with open(self, image_path, "rb") as image_file:
             return base64.b64encode(image_file.read()).decode('utf-8')
+
+    @backoff.on_exception(
+        backoff.expo,
+        (APIError, RateLimitError, APIConnectionError, ServiceUnavailableError, InvalidRequestError),
+    )
+    def single_turn_generation(self, prompt, system_prompt, image_path, **kwargs):
+        base64_image = encode_image(image_path)
+        prompt2_input = [{"role": "system", "content": [{"type": "text", "text": system_prompt}]},
+                         {"role": "user", "content": [{"type": "image_url",
+                                                       "image_url": {
+                                                           "url": f"data:image/jpeg;base64,{base64_image}",
+                                                           "detail": "high"}, },
+                                                      {"type": "text", "text": prompt}]}]
+        # if current_feedback is not None:
+        #     prompt2_input[-1]["content"].append({"type": "text", "text": current_feedback})
+        response2 = openai.ChatCompletion.create(
+            model=self.model,
+            messages=prompt2_input,
+            max_tokens=4096,
+            temperature=self.temperature,
+            **kwargs,
+        )
+        return [choice["message"]["content"] for choice in response2["choices"]][0]
 
     @backoff.on_exception(
         backoff.expo,
