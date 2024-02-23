@@ -39,5 +39,7 @@ def main(dino_prompt, CURRENT_SCREENSHOT):
 
 
 if __name__ == '__main__':
-    instruct, screenshot = sys.argv[1], sys.argv[2]
+    # instruct, screenshot = sys.argv[1], sys.argv[2]
+    screenshot = ""
+    instruct = ''' '''
     main(instruct, screenshot)

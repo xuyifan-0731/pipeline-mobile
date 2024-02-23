@@ -5,3 +5,9 @@ gpt4v.py
 temp
 __pycache__
 traces
+
+temp
+traces
+**/__pycache__
+test
+.env

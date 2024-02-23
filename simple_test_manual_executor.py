@@ -1,35 +1,39 @@
-import json
-
-from playwright.sync_api import Playwright, sync_playwright
-from gpt4v import OpenaiEngine
-
-import requests
-import re
-import time
-import cv2
 import os
+import time
+import re
+import sys
+sys.path.append('./')
+
+import cv2
+import json
 import getpass
+import requests
+
+from dotenv import load_dotenv
+from gpt4v import OpenaiEngine
+from playwright.sync_api import Playwright, sync_playwright
+
+
+config_path = os.path.join(os.path.dirname(__file__), '.env')
+load_dotenv(config_path)
+
 
 openai_engine = OpenaiEngine()
 
 CURRENT_SCREENSHOT = None
 TURN_NUMBER = 0
 
-TRACE_DIR = os.environ.get('TRACE_DIR')
-SCREENSHOT_DIR = os.environ.get('SCREENSHOT_DIR')
-if TRACE_DIR is None:
-    TRACE_DIR = '../traces'
-if SCREENSHOT_DIR is None:
-    SCREENSHOT_DIR = '../temp'
-os.makedirs(TRACE_DIR, exist_ok=True)
-os.makedirs(SCREENSHOT_DIR, exist_ok=True)
-
+TRACE_DIR = os.getenv('TRACE_DIR')
+SCREENSHOT_DIR = os.getenv('SCREENSHOT_DIR')
 
 class Record:
     def __init__(self, instruction):
         self.id = int(time.time())
         self.instruction = instruction
-        self.file_path = f'{TRACE_DIR}/{self.id}.jsonl'
+
+        os.makedirs(f'{TRACE_DIR}/{self.id}', exist_ok=True)
+        self.file_path = f'{TRACE_DIR}/{self.id}/{self.id}.jsonl'
+        
         self.contents = []
 
     def update_response(self, page, response, prompt="<|user|>\n** screenshot **"):
@@ -42,6 +46,7 @@ class Record:
 
     def update_execution(self, exe_res):
         self.contents[-1]['parsed_action'] = exe_res
+        
         with open(self.file_path, 'a') as f:
             f.write(json.dumps(self.contents[-1], ensure_ascii=False) + '\n')
 
@@ -51,7 +56,14 @@ class Record:
             history.append({"role": "user", "content": [{"type": "text", "text": turn['prompt']}]})
             history.append({"role": "assistant", "content": [{"type": "text", "text": turn['response']}]})
         return history
-
+    
+    def load_history(self, path):
+        with open(path, 'r') as f:
+            contents = [json.loads(line) for line in f]
+        self.contents = contents
+        self.file_path = path
+        self.id = int(path.split("/")[-1].split(".jsonl")[0])
+        self.instruction = contents[0]['prompt']
 
 def plot_bbox(bbox):
     global CURRENT_SCREENSHOT
@@ -98,9 +110,8 @@ def call_dino(instruction, screenshot_path):
     response = requests.post("http://172.19.64.21:24026/v1/executor", files=files,
                              data={"text_prompt": f"{instruction}"})
     return [int(s) for s in response.json()['response'].split(',')]
-
-
-def execution(content, page):
+        
+def execution(content, page, auto_executor = True):
     global CURRENT_SCREENSHOT
     code = re.search(r'```.*?\n(.*?)\n.*?```', content)
     if code is None:
@@ -114,6 +125,16 @@ def execution(content, page):
             break
     if code.startswith('do'):
         action = re.search(r'action="(.*?)"', code).group(1)
+        if not auto_executor:
+            if action in ['Click','Right Click','Type','Search','Hover']:
+                instruction = re.search('find_element_by_instruction\(instruction="(.*?)"\)', code).group(1)
+                return {"operation": "do", "action": action, "kwargs": {"instruction": instruction}, "bbox": None}
+            elif action == "Press Key":
+                argument = re.search(r'argument="(.*?)"', code).group(1)
+                return {"operation": "do", "action": action, "kwargs": {"argument": argument}}
+            else:
+                return {"operation": "do", "action": action}
+        
         if action == 'Click':
             instruction, bbox = operate_relative_bbox_center(page, code, action)
             return {"operation": "do", "action": action, "kwargs": {"instruction": instruction}, "bbox": bbox}
@@ -159,7 +180,7 @@ def execution(content, page):
 
 
 # 创建浏览器
-def run(playwright: Playwright, instruction=None) -> None:
+def run(playwright: Playwright, instruction=None, auto_executor = True, history_path = None) -> None:
     global CURRENT_SCREENSHOT, TURN_NUMBER
     # 创建浏览器
     __USER_DATE_DIR_PATH__ = f'/Users/{getpass.getuser()}/Library/Application Support/Google/Chrome/Default'  # 浏览器缓存(登录信息)/书签/个人偏好舍设置内容存储位置, 如下图
@@ -184,10 +205,17 @@ def run(playwright: Playwright, instruction=None) -> None:
     instruction = input("What would you like to do? >>> ") if instruction is None else instruction
     record = Record(instruction=instruction)
 
+    if history_path:
+        record.load_history(history_path)
+
     while TURN_NUMBER <= 100:
-        content = openai_engine.generate(prompt=instruction, image_path=CURRENT_SCREENSHOT, turn_number=TURN_NUMBER,
+        if not history_path:
+            content = openai_engine.generate(prompt=instruction, image_path=CURRENT_SCREENSHOT, turn_number=TURN_NUMBER,
                                          ouput__0=record.format_history())
-        record.update_response(page, content)
+            record.update_response(page, content)
+        else:
+            content = record.contents[-1]['response']
+            history_path = None
         print(content)
 
         new_page_captured = False
@@ -202,17 +230,19 @@ def run(playwright: Playwright, instruction=None) -> None:
 
         context.on("page", capture_new_page)
 
-        exe_res = execution(content, page)
+        exe_res = execution(content, page, auto_executor)
         record.update_execution(exe_res)
         if exe_res['operation'] == 'exit':
             break
 
         TURN_NUMBER += 1
-        # input("Continue? >>>")
-
+        if not auto_executor:
+            input("Finish the action and start to screenshot. >>> ")
+        else:
+            time.sleep(3)
         # 保存截图
-        time.sleep(3)
-        CURRENT_SCREENSHOT = f"temp/screenshot-{time.time()}.png"
+        
+        CURRENT_SCREENSHOT = f"{TRACE_DIR}/{record.id}/screenshot/{TURN_NUMBER-1}.png"
         _ = page.viewport_size
         page.screenshot(path="/dev/null")
         while new_page_captured:
@@ -220,10 +250,22 @@ def run(playwright: Playwright, instruction=None) -> None:
         page.screenshot(path=CURRENT_SCREENSHOT)
 
 
-def main(instruction=None):
+def main(instruction=None, auto_executor = True, history_path = None):
     with sync_playwright() as playwright:
-        run(playwright)
+        run(playwright,instruction, auto_executor, history_path)
 
 
 if __name__ == '__main__':
-    main()
+    
+    instruction = '''open the url http://172.16.64.65:9999/forums and comment to the first post in the r/books with my comment "can't stop it".'''
+    auto_executor = True
+    
+    # 恢复加载
+    reload_history = False
+    history_path = None
+
+    if reload_history:
+        TURN_NUMBER = 3
+        history_path = "./traces/1708670656/1708670656.jsonl"
+
+    main(instruction, auto_executor, history_path)
