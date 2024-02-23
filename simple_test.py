@@ -174,8 +174,6 @@ def run(playwright: Playwright, instruction=None) -> None:
         args=['--start-maximized', '--disable-blink-features=AutomationControlled'],  # 跳过检测
     )
 
-    os.system("gnome-terminal -e 'bash -c \"ls; exec bash\"'")
-
     # 使用 selenium 如果要打开多个网页，需要创建多个浏览器，但是 playwright 中只需要创建多个上下文即可
     # 例如：content1 = browser.new_context()、content2 = browser.new_context() 分别去访问网页做处理
     # content = browser.new_context()
