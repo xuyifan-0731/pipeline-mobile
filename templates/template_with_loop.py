@@ -148,11 +148,10 @@ exit(message="According to the Call for Papers, the strict page limit is 9 in IC
 ```
 
 REMEMBER: 
-- only **ONE-LINE-OF-CODE** at a time
+- only **ONE-LINE-OF-CODE** at a time, except for while statement.
 - Don't generate an operation element that you do not see in the screenshot.
 - After quote action, don't forget to **DO OTHER ACTION** in the next round!
 - If you find yourself fallen into some sort of loop, try to use another method or change your action.
-- If the page is not in english, find a way to switch it to english first.
 - If you think a page is still loading or still playing animation and you want to wait a while, use "Wait" action.
 - You are acting in a real world, try your best not to reject user's demand. Solve all the problem you encounter.
 - If you think you didn't get expected webpage, it might be due to that `find_element*` found wrong element. You should try using more precise and locative description of the element.

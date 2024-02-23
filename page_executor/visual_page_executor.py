@@ -18,7 +18,7 @@ class SyncVisualPageExecutor:
 
     def __capture_new_page__(self, event):
         self.new_page_captured = True
-        event.wait_for_load_state()
+        event.wait_for_load_state(timeout=30000)
         self.page = event
         self.new_page_captured = False
 
@@ -60,12 +60,13 @@ class SyncVisualPageExecutor:
         while self.new_page_captured:
             time.sleep(0.1)
         self.page.screenshot(path=self.current_screenshot)
+        print("Screenshot saved.")
 
     def open_url(self, url):
         self.page.goto(url)
         self.current_return = {"operation": "open_url", "kwargs": {"url": url}}
 
-    def do(self, action, argument, element):
+    def do(self, action=None, argument=None, element=None):
         if action == 'Click':
             self.click(element)
         elif action == 'Right Click':
@@ -134,11 +135,11 @@ class SyncVisualPageExecutor:
                                "bbox": bbox}
 
     def scroll_up(self):
-        self.page.mouse.wheel(0, self.page.viewport_size['height'] / 3 * 2)
+        self.page.mouse.wheel(0, -self.page.viewport_size['height'] / 3 * 2)
         self.current_return = {"operation": "do", "action": 'Scroll Up'}
 
     def scroll_down(self):
-        self.page.mouse.wheel(0, -self.page.viewport_size['height'] / 3 * 2)
+        self.page.mouse.wheel(0, self.page.viewport_size['height'] / 3 * 2)
         self.current_return = {"operation": "do", "action": 'Scroll Down'}
 
     def press_key(self, argument):
