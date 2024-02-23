@@ -11,8 +11,10 @@ def screenshot_contains(engine, keywords, screenshot):
 
 
 def screenshot_satisfies(engine, condition, screenshot):
-    return engine.single_turn_generation(
+    response = engine.single_turn_generation(
         system_prompt=SCREENSHOT_CLF_PROMPT,
         prompt=f"{condition}? Answer 'Yes' or 'No' only.",
         image_path=screenshot
-    ) == 'Yes'
+    )
+    print(f"Call screenshot_satisfies(condition='{condition}'): {response}")
+    return response == 'Yes'
