@@ -3,3 +3,5 @@ gpt4v.py
 */temp
 */*/temp
 temp
+__pycache__
+traces
