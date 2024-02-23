@@ -3,11 +3,13 @@
 ## 环境配置
 采用的 SeeAct 使用的环境配置，不一定全部必要
 - 进入Pipeline，bash setup.sh
-- 启动命令：返回到上级目录，python -m Pipeline.simple_test
 - 在本地运行。记得修改.env里的 OpenAI API Key
 
 ## 同步 DEMO
 python -m Pipeline.pipelines.interactive
+
+注意：
+- 修改 `gpt4v.py` 中的 `from templates.<template_name> import SYSTEM_PROMPT` 来使用不同的 template。目前在基础方案上，提供了一个支持 `while` 循环操作的template。
 
 ### 两套 Pipeline 区别
 - simple_test.py 启动时会自动确认从什么网站开始
