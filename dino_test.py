@@ -39,5 +39,7 @@ def main(dino_prompt, CURRENT_SCREENSHOT):
 
 
 if __name__ == '__main__':
-    instruct, screenshot = sys.argv[1], sys.argv[2]
+    # instruct, screenshot = sys.argv[1], sys.argv[2]
+    screenshot = "/Users/crescent/Downloads/Pipeline/Pipeline/traces/1708671840/screenshot/8.png"
+    instruct = '''the 'comments' link of the first post'''
     main(instruct, screenshot)

@@ -9,12 +9,16 @@ from openai.error import (
     ServiceUnavailableError,
     InvalidRequestError
 )
-from .template import SYSTEM_PROMPT
+from template import SYSTEM_PROMPT
 
 import base64
+from dotenv import load_dotenv
+
+config_path = os.path.join(os.path.dirname(__file__), '.env')
+load_dotenv(config_path)
 
 openai.api_base = "https://one-api.glm.ai/v1"
-openai.api_key = ""
+openai.api_key = os.getenv('GPT4V_TOKEN')
 
 
 def run_connection_test():
