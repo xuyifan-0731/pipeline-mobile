@@ -1,3 +1,5 @@
+import os
+
 from .utils import get_relative_bbox_center
 from .api_utils import screenshot_satisfies
 
@@ -7,10 +9,13 @@ from functools import partial
 
 
 class SyncVisualPageExecutor:
-    def __init__(self, context, page, engine):
+    def __init__(self, context, page, engine, screenshot_dir):
         self.context = context
         self.page = page
         self.engine = engine
+        self.screenshot_dir = screenshot_dir
+        self.task_id = int(time.time())
+        os.makedirs(f'{self.screenshot_dir}/{self.task_id}')
 
         self.new_page_captured = False
         self.current_screenshot = None
@@ -53,8 +58,8 @@ class SyncVisualPageExecutor:
         return methods_dict
 
     def __update_screenshot__(self):
-        time.sleep(3)
-        self.current_screenshot = f"temp/screenshot-{time.time()}.png"
+        time.sleep(5)
+        self.current_screenshot = f"{self.screenshot_dir}/{self.task_id}/screenshot-{time.time()}.png"
         _ = self.page.viewport_size
         self.page.screenshot(path="/dev/null")
         while self.new_page_captured:
@@ -94,6 +99,8 @@ class SyncVisualPageExecutor:
             self.scroll_up()
         elif action == 'Press Key':
             self.press_key(argument)
+        elif action == 'Wait':
+            self.wait()
         else:
             raise NotImplementedError()
         self.__update_screenshot__()
@@ -165,3 +172,7 @@ class SyncVisualPageExecutor:
     def press_key(self, argument):
         self.page.keyboard.press(argument)
         self.current_return = {"operation": "do", "action": 'Press Key', "kwargs": {"argument": argument}}
+
+    def wait(self):
+        self.page.wait_for_timeout(5000)
+        self.current_return = {"operation": "do", "action": 'Wait'}

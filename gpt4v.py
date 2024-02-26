@@ -9,7 +9,7 @@ from openai.error import (
     ServiceUnavailableError,
     InvalidRequestError
 )
-from .templates.template import SYSTEM_PROMPT
+from .templates.template_with_loop import SYSTEM_PROMPT
 
 import base64
 from dotenv import load_dotenv

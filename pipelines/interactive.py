@@ -4,10 +4,14 @@ from ..recorder import JSONRecorder
 from playwright.sync_api import Playwright, sync_playwright
 from ..gpt4v import OpenaiEngine
 
+import os
 import re
 import getpass
+from dotenv import load_dotenv
 
 openai_engine = OpenaiEngine()
+config_path = os.path.join(os.path.dirname(__file__), '.env')
+load_dotenv(config_path)
 
 
 def get_code_snippet(content):
@@ -35,7 +39,8 @@ def run(playwright: Playwright, instruction=None) -> None:
     )
 
     page = context.new_page()
-    page_executor = SyncVisualPageExecutor(context, page, openai_engine)
+    page_executor = SyncVisualPageExecutor(context=context, page=page, engine=openai_engine,
+                                           screenshot_dir=os.getenv('SCREENSHOT_DIR'))
     instruction = input("What would you like to do? >>> ") if instruction is None else instruction
     record = JSONRecorder(instruction=instruction, page_executor=page_executor)
 
@@ -61,4 +66,5 @@ def main(instruction=None):
 
 
 if __name__ == '__main__':
-    main('Browse and list 3 latest paper authored by Google tweeted by my friend Aran Komatsuzaki on twitter. Start from twitter and find his profile.')
+    main(
+        'Browse and list 3 latest paper authored by Google tweeted by my friend Aran Komatsuzaki on twitter, and help me \'like\' them. Start from twitter and find his profile.')
