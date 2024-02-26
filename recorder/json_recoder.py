@@ -22,10 +22,10 @@ class JSONRecorder:
         self.file_path = f'{TRACE_DIR}/{self.id}.jsonl'
         self.contents = []
 
-    def update_response(self, page, response, prompt="<|user|>\n** screenshot **"):
+    def update_response(self, page, response, prompt="** screenshot **"):
         step = {
             "trace_id": self.id, "index": self.turn_number,
-            "prompt": prompt if self.turn_number > 0 else f"<|user|>\n{self.instruction}",
+            "prompt": prompt if self.turn_number > 0 else f"{self.instruction}",
             "image": self.page_executor.current_screenshot, "response": response, "url": page.url,
             "window": page.viewport_size, "target": self.instruction
         }

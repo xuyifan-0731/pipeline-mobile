@@ -35,4 +35,4 @@ def get_relative_bbox_center(page, instruction, screenshot):
     # print(center_x, center_y)
     plot_bbox([int(center_x - width_x / 2), int(center_y - height_y / 2), int(width_x), int(height_y)], screenshot)
 
-    return (center_x, center_y), relative_bbox
+    return (int(center_x), int(center_y)), relative_bbox
