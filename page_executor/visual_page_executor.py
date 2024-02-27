@@ -5,6 +5,7 @@ from .api_utils import screenshot_satisfies
 
 import time
 import inspect
+import json
 from functools import partial
 
 
@@ -20,6 +21,15 @@ class SyncVisualPageExecutor:
         self.new_page_captured = False
         self.current_screenshot = None
         self.current_return = None
+
+    def __get_current_status__(self):
+        status = {
+            "Current URL": self.page.url,
+            "document.body.scrollHeight": self.page.evaluate("document.body.scrollHeight"),
+            "window.pageYOffset": self.page.evaluate("window.pageYOffset"),
+            "window.innerHeight": self.page.evaluate("window.innerHeight")
+        }
+        return json.dumps(status, ensure_ascii=False)
 
     def __capture_new_page__(self, event):
         self.new_page_captured = True
