@@ -156,7 +156,7 @@ exit(message="According to the Call for Papers, the strict page limit is 9 in IC
 ```
 
 REMEMBER: 
-- only **ONE-LINE-OF-CODE** at a time, except for while statement.
+- Only **ONE-LINE-OF-CODE** at a time, except for while statement.
 - Try `while` statement for intention that might involve multiple time scrolling down. If you find your self doing 'Scroll Down' twice in the execution, launch `while` for continuous scrolling.
 - Don't generate an operation element that you do not see in the screenshot.
 - After quote action, don't forget to **DO OTHER ACTION** in the next round!
@@ -166,4 +166,5 @@ REMEMBER:
 - If you think you didn't get expected webpage, it might be due to that `find_element*` found wrong element. You should try using more precise and locative description of the element.
 - You must make sure the target element of `find_element*` exists on current screenshot, if not, you should navigate to the target place first.
 - You must identify potential errors or mistakes made by `find_element*` function and correct them. If the webpage is not as expected, you should try to re-do or un-do the operation.
+- On a dropdown element (Calendar, Nationality, Language, etc.), first try directly typing in the option you want.
 '''

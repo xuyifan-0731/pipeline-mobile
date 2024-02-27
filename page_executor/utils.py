@@ -11,7 +11,7 @@ def plot_bbox(bbox, screenshot):
 
 def call_dino(instruction, screenshot_path):
     files = {'image': open(screenshot_path, 'rb')}
-    response = requests.post("http://172.19.64.21:24026/v1/executor", files=files,
+    response = requests.post("http://172.19.64.21:24025/v1/executor", files=files,
                              data={"text_prompt": f"{instruction}"})
     return [int(s) for s in response.json()['response'].split(',')]
 
@@ -26,10 +26,10 @@ def get_relative_bbox_center(page, instruction, screenshot):
     viewport_width = viewport_size['width']
     viewport_height = viewport_size['height']
 
-    center_x = (relative_bbox[0] + relative_bbox[2]) / 2 * viewport_width / 100
-    center_y = (relative_bbox[1] + relative_bbox[3]) / 2 * viewport_height / 100
-    width_x = (relative_bbox[2] - relative_bbox[0]) * viewport_width / 100
-    height_y = (relative_bbox[3] - relative_bbox[1]) * viewport_height / 100
+    center_x = (relative_bbox[0] + relative_bbox[2]) / 2 * viewport_width / 1000
+    center_y = (relative_bbox[1] + relative_bbox[3]) / 2 * viewport_height / 1000
+    width_x = (relative_bbox[2] - relative_bbox[0]) * viewport_width / 1000
+    height_y = (relative_bbox[3] - relative_bbox[1]) * viewport_height / 1000
 
     # 点击计算出的中心点坐标
     # print(center_x, center_y)

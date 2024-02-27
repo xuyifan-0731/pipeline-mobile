@@ -129,10 +129,16 @@ class OpenaiEngine(Engine):
         elif turn_number > 0:
             base64_image = encode_image(image_path)
             prompt2_input = [{"role": "system", "content": [{"type": "text", "text": SYSTEM_PROMPT}]}] + \
-                            ouput__0 + [{"role": "user", "content": [{"type": "image_url",
-                                                                      "image_url": {
-                                                                          "url": f"data:image/jpeg;base64,{base64_image}",
-                                                                          "detail": "high"}, }]}]
+                            ouput__0 + \
+                            [
+                                {"role": "user", "content": [
+                                    {"type": "image_url",
+                                     "image_url": {
+                                         "url": f"data:image/jpeg;base64,{base64_image}", "detail": "high"}
+                                     }
+                                ]},
+                                {"role": "user", "content": [{"type": "text", "text": prompt}]}
+                            ]
             # if current_feedback is not None:
             #     prompt2_input[-1]["content"].append({"type": "text", "text": current_feedback})
             response2 = openai.ChatCompletion.create(

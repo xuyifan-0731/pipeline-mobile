@@ -45,7 +45,8 @@ def run(playwright: Playwright, instruction=None) -> None:
     record = JSONRecorder(instruction=instruction, page_executor=page_executor)
 
     while record.turn_number <= 100:
-        content = openai_engine.generate(prompt=instruction, image_path=page_executor.current_screenshot,
+        prompt = f"Current URL: {page.url}" if record.turn_number > 0 else instruction
+        content = openai_engine.generate(prompt=prompt, image_path=page_executor.current_screenshot,
                                          turn_number=record.turn_number, ouput__0=record.format_history())
         record.update_response(page, content)
         print(content)
@@ -66,5 +67,5 @@ def main(instruction=None):
 
 
 if __name__ == '__main__':
-    main(
-        'Browse and list 3 latest paper authored by Google tweeted by my friend Aran Komatsuzaki on twitter, and help me \'like\' them. Start from twitter and find his profile.')
+    main()
+    # main('Browse and list 3 latest paper authored by Google tweeted by my friend Aran Komatsuzaki on twitter, and help me \'like\' them. Start from twitter and find his profile.')
