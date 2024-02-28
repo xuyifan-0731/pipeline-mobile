@@ -27,10 +27,10 @@ def main(dino_prompt, CURRENT_SCREENSHOT):
     viewport_height, viewport_width = image.shape[:2]
     print(image.shape)
 
-    center_x = (relative_bbox[0] + relative_bbox[2]) / 2 * viewport_width / 100
-    center_y = (relative_bbox[1] + relative_bbox[3]) / 2 * viewport_height / 100
-    width_x = (relative_bbox[2] - relative_bbox[0]) * viewport_width / 100
-    height_y = (relative_bbox[3] - relative_bbox[1]) * viewport_height / 100
+    center_x = (relative_bbox[0] + relative_bbox[2]) / 2 * viewport_width / 1000
+    center_y = (relative_bbox[1] + relative_bbox[3]) / 2 * viewport_height / 1000
+    width_x = (relative_bbox[2] - relative_bbox[0]) * viewport_width / 1000
+    height_y = (relative_bbox[3] - relative_bbox[1]) * viewport_height / 1000
 
     # 点击计算出的中心点坐标
     print(center_x, center_y)
