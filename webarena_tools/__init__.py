@@ -21,8 +21,4 @@ from .env_config import (
     URL_MAPPINGS
 )
 
-from .auto_login import (
-    get_site_comb_from_filepath,
-)
-
 from .envs import setup

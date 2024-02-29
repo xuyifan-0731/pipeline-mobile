@@ -2,7 +2,8 @@
 import os
 from dotenv import load_dotenv
 
-load_dotenv()
+PARENT_PATH = os.path.dirname(os.path.abspath(__file__)) 
+load_dotenv(f"{PARENT_PATH}/../.env")
 
 REDDIT = os.environ.get("REDDIT", "")
 SHOPPING = os.environ.get("SHOPPING", "")

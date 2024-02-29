@@ -21,6 +21,9 @@ from .recorder import JSONRecorder
 from .gpt4v import OpenaiEngine
 from .webarena_tools import (
     setup,
+)
+
+from .webarena_tools.auto_login import (
     get_site_comb_from_filepath
 )
 

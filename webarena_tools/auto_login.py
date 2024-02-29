@@ -9,7 +9,7 @@ from pathlib import Path
 
 from playwright.sync_api import sync_playwright
 
-from env_config import (
+from .env_config import (
     ACCOUNTS,
     GITLAB,
     REDDIT,
@@ -127,8 +127,6 @@ def main(auth_folder: str = "./.auth") -> None:
         for site in SITES:
             executor.submit(renew_comb, [site], auth_folder=auth_folder)
         
-
-    print('hello')
     futures = []
     cookie_files = list(glob.glob(f"{auth_folder}/*.json"))
     with ThreadPoolExecutor(max_workers=max_workers) as executor:
