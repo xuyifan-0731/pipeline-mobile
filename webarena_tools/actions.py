@@ -1,10 +1,33 @@
+from __future__ import annotations
+
 import numpy as np
+import numpy.typing as npt
 
 from enum import IntEnum
 from itertools import chain
+from typing import Any, TypedDict, Union, cast
 from .constants import (
-    SPECIAL_KEYS, ASCII_CHARSET, FREQ_UNICODE_CHARSET
+    SPECIAL_KEYS, ASCII_CHARSET, FREQ_UNICODE_CHARSET, SPECIAL_KEY_MAPPINGS
 )
+
+class Action(TypedDict):
+    action_type: int
+    coords: npt.NDArray[np.float32]
+    element_role: int
+    element_name: str
+    text: list[int]
+    page_number: int
+    url: str
+    nth: int
+    element_id: str
+    direction: str
+    key_comb: str
+    pw_code: str
+    answer: str
+    raw_prediction: str  # raw prediction from the model
+    label: str
+    flag: bool
+    use_coords: bool
 
 class ActionTypes(IntEnum):
     NONE = 0
@@ -46,12 +69,13 @@ _key2id: dict[str, int] = {
         chain(SPECIAL_KEYS, ASCII_CHARSET, FREQ_UNICODE_CHARSET, ["\n"])
     )
 }
+
 _id2key: list[str] = sorted(_key2id, key=_key2id.get)  # type: ignore[arg-type]
 
 def _keys2ids(keys: list[int | str] | str) -> list[int]:
     return list(
         map(
-            lambda key: ActionCreator._key2id[str(key)]
+            lambda key: _key2id[str(key)]
             if isinstance(key, str)
             else int(key),
             keys,

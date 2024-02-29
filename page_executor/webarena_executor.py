@@ -8,7 +8,7 @@ import inspect
 import json
 from functools import partial
 
-from .webarena_actions import (
+from ..webarena_tools import (
     create_none_action,
     create_stop_action,
     create_click_action,

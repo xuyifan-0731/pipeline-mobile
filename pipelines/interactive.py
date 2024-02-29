@@ -1,4 +1,4 @@
-from ..page_executor import SyncVisualPageExecutor, WebarenaPageExecutor
+from ..page_executor import SyncVisualPageExecutor
 from ..recorder import JSONRecorder
 
 from playwright.sync_api import Playwright, sync_playwright
@@ -39,7 +39,7 @@ def run(playwright: Playwright, instruction=None) -> None:
     )
 
     page = context.new_page()
-    page_executor = WebarenaPageExecutor(context=context, page=page, engine=openai_engine,
+    page_executor = SyncVisualPageExecutor(context=context, page=page, engine=openai_engine,
                                            screenshot_dir=os.getenv('SCREENSHOT_DIR'))
     instruction = input("What would you like to do? >>> ") if instruction is None else instruction
     record = JSONRecorder(instruction=instruction, page_executor=page_executor)

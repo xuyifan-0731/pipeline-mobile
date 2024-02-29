@@ -73,3 +73,8 @@ SPECIAL_KEY_MAPPINGS = {
     "f11": "F11",
     "f12": "F12",
 }
+
+DEFAULT_VIEWPORT = {
+    "width": 720,
+    "height": 1280,
+}
