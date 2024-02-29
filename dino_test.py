@@ -7,6 +7,8 @@ import cv2
 def plot_bbox(bbox, CURRENT_SCREENSHOT, prompt):
     image = cv2.imread(CURRENT_SCREENSHOT)
     cv2.rectangle(image, (bbox[0], bbox[1]), (bbox[0] + bbox[2], bbox[1] + bbox[3]), (0, 255, 0), 2)
+    cv2.circle(image, (int(bbox[0] + bbox[2] / 2), int(bbox[1] + bbox[3] / 2)), radius=0, color=(0, 255, 0),
+               thickness=2)
     cv2.putText(image, prompt, (int(bbox[0] * 0.3), int(bbox[1] * 0.1)), fontFace=cv2.FONT_HERSHEY_SIMPLEX,
                 fontScale=0.5, color=(0, 0, 0), thickness=2)
     cv2.imwrite(CURRENT_SCREENSHOT.replace('.png', '-dino-test.png'), image)
@@ -27,10 +29,10 @@ def main(dino_prompt, CURRENT_SCREENSHOT):
     viewport_height, viewport_width = image.shape[:2]
     print(image.shape)
 
-    center_x = (relative_bbox[0] + relative_bbox[2]) / 2 * viewport_width / 100
-    center_y = (relative_bbox[1] + relative_bbox[3]) / 2 * viewport_height / 100
-    width_x = (relative_bbox[2] - relative_bbox[0]) * viewport_width / 100
-    height_y = (relative_bbox[3] - relative_bbox[1]) * viewport_height / 100
+    center_x = (relative_bbox[0] + relative_bbox[2]) / 2 * viewport_width / 1000
+    center_y = (relative_bbox[1] + relative_bbox[3]) / 2 * viewport_height / 1000
+    width_x = (relative_bbox[2] - relative_bbox[0]) * viewport_width / 1000
+    height_y = (relative_bbox[3] - relative_bbox[1]) * viewport_height / 1000
 
     # 点击计算出的中心点坐标
     print(center_x, center_y)
