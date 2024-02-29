@@ -342,7 +342,7 @@ class EvaluatorComb:
         trajectory: Trajectory,
         config_file: Path | str,
         page: Page | PseudoPage,
-        client: CDPSession,
+        client: CDPSession | None = None,
     ) -> float:
         score = 1.0
         for evaluator in self.evaluators:

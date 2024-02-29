@@ -22,3 +22,4 @@ from .env_config import (
 )
 
 from .envs import setup
+from .evaluators import evaluator_router

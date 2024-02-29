@@ -145,18 +145,24 @@ class WebarenaPageExecutor:
     # Implement sub-actions of do
     def click(self, element):
         instruction, (center_x, center_y), bbox = element
+        self.page.mouse.click(center_x, center_y)
         self.action_return = create_click_action(center_x, center_y)
         self.current_return = {"operation": "do", "action": 'Click', "kwargs": {"instruction": instruction},
                                "bbox": bbox}
 
     def right_click(self, element):
         instruction, (center_x, center_y), bbox = element
+        self.page.mouse.click(center_x, center_y, button="right")
         self.action_return = create_click_action(center_x, center_y, True)
         self.current_return = {"operation": "do", "action": 'Click', "kwargs": {"instruction": instruction},
                                "bbox": bbox}
 
     def type(self, argument, element):
         instruction, (center_x, center_y), bbox = element
+        self.page.mouse.click(center_x, center_y, button='left')
+        self.page.keyboard.press('Meta+A')
+        self.page.keyboard.press('Backspace')
+        self.page.keyboard.type(argument)
         self.action_return = create_type_action(argument, center_x, center_y)
         self.current_return = {"operation": "do", "action": 'Type',
                                "kwargs": {"argument": argument, "instruction": instruction},
@@ -164,6 +170,11 @@ class WebarenaPageExecutor:
 
     def search(self, argument, element):
         instruction, (center_x, center_y), bbox = element
+        self.page.mouse.click(center_x, center_y, button='left')
+        self.page.keyboard.press('Meta+A')
+        self.page.keyboard.press('Backspace')
+        self.page.keyboard.type(argument)
+        self.page.keyboard.press('Enter')
         self.action_return = create_type_action(argument + '\n', center_x, center_y, True)
         self.current_return = {"operation": "do", "action": 'Search',
                                "kwargs": {"argument": argument, "instruction": instruction},
@@ -171,23 +182,29 @@ class WebarenaPageExecutor:
 
     def hover(self, element):
         instruction, (center_x, center_y), bbox = element
+        self.page.mouse.move(center_x, center_y)
+        self.page.wait_for_timeout(500)
         self.action_return = create_hover_action(center_x, center_y)
         self.current_return = {"operation": "do", "action": 'Hover', "kwargs": {"instruction": instruction},
                                "bbox": bbox}
 
     def scroll_up(self):
+        self.page.mouse.wheel(0, -self.page.viewport_size['height'] * 2.0 / 3)
         self.action_return = create_scroll_action('up')
         self.current_return = {"operation": "do", "action": 'Scroll Up'}
 
     def scroll_down(self):
+        self.page.mouse.wheel(0, self.page.viewport_size['height'] * 2.0 / 3)
         self.action_return = create_scroll_action('down')
         self.current_return = {"operation": "do", "action": 'Scroll Down'}
 
     def press_key(self, argument):
+        self.page.keyboard.press(argument)
         self.action_return = create_key_press_action(argument)
         self.current_return = {"operation": "do", "action": 'Press Key', "kwargs": {"argument": argument}}
 
     def wait(self):
         self.page.wait_for_timeout(5000)
+        self.action_return = create_none_action()
         self.current_return = {"operation": "do", "action": 'Wait'}
 

@@ -2,7 +2,7 @@ import os
 import openai
 import openai.error
 
-def generate_from_openai_completion(
+def generate_from_openai_chat_completion(
     prompt: str,
 ) -> str:
     if "OPENAI_API_KEY" not in os.environ:

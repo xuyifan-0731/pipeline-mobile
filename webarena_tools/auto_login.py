@@ -6,6 +6,7 @@ import time
 from concurrent.futures import ThreadPoolExecutor
 from itertools import combinations
 from pathlib import Path
+from typing import List
 
 from playwright.sync_api import sync_playwright
 
@@ -58,7 +59,7 @@ def is_expired(
             return url not in d_url
 
 
-def renew_comb(comb: list[str], auth_folder: str = "./.auth") -> None:
+def renew_comb(comb: List[str], auth_folder: str = "./.auth") -> None:
     context_manager = sync_playwright()
     playwright = context_manager.__enter__()
     browser = playwright.chromium.launch(headless=HEADLESS)
@@ -104,7 +105,7 @@ def renew_comb(comb: list[str], auth_folder: str = "./.auth") -> None:
     context_manager.__exit__()
 
 
-def get_site_comb_from_filepath(file_path: str) -> list[str]:
+def get_site_comb_from_filepath(file_path: str) -> List[str]:
     comb = os.path.basename(file_path).rsplit("_", 1)[0].split(".")
     return comb
 

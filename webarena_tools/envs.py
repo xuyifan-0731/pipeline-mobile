@@ -16,8 +16,11 @@ def setup(
     config_file: Path | None = None,
     options: dict[str, str] | None = None,
 ) -> tuple[BrowserContext, Page]:
+    slow_mo = options.get("slow_mo", 0)
+    viewport = options.get("viewport", DEFAULT_VIEWPORT)
+    
     browser = playwright.chromium.launch(
-        headless=True, slow_mo=False
+        headless=True, slow_mo=slow_mo
     )
 
     if config_file:
@@ -29,7 +32,6 @@ def setup(
     storage_state = instance_config.get("storage_state", None)
     start_url = instance_config.get("start_url", None)
     geolocation = instance_config.get("geolocation", None)
-    viewport = options.get("viewport", DEFAULT_VIEWPORT)
 
     context = browser.new_context(
         viewport=viewport,
