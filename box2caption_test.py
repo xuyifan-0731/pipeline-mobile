@@ -4,6 +4,7 @@ import cv2
 from PIL import Image, ImageDraw
 
 def format_bbox(bbox, window=(1280, 720)):
+    # For x, y, w, h format bbox
     x1 = min(int(bbox[0] / window[0] * 1000), 999)
     y1 = min(int(bbox[1] / window[1] * 1000), 999)
     x2 = min(int(bbox[2] / window[0] * 1000) + x1, 999)
