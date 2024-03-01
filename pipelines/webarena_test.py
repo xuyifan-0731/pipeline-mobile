@@ -192,9 +192,11 @@ def config() -> argparse.Namespace:
     parser.add_argument("--sleep_after_execution", type=float, default=0.0)
     parser.add_argument("--max_steps", type=int, default=30)
 
-    # example config
-    parser.add_argument("--test_start_idx", type=int, default=0)
-    parser.add_argument("--test_end_idx", type=int, default=1000)
+    # test config
+    parser.add_argument("--start_idx", type=int, default=0)
+    parser.add_argument("--end_idx", type=int, default=1000)
+    parser.add_argument("--sample", type=int, default=1)
+    parser.add_argument("--sites", type=str, default="shopping,shopping_admin,gitlab,reddit,wikipedia")
 
     # logging related
     parser.add_argument("--result_dir", type=str, default="")
@@ -226,12 +228,22 @@ if __name__ == '__main__':
     prepare(args)
 
     test_file_list = []
-    st_idx = args.test_start_idx
-    ed_idx = args.test_end_idx
+    st_idx = args.start_idx
+    ed_idx = args.end_idx
+    
+    sites = args.sites.split(",")
+            
     for i in range(st_idx, ed_idx):
-        if not os.path.exists(f"{ROOT_PATH}/config_files/{i}.json"):
+        path = os.path.join(ROOT_PATH, "config_files", f"{i}.json")
+        if not os.path.exists(path):
             continue
-        test_file_list.append(f"{ROOT_PATH}/config_files/{i}.json")
+        if i % args.sample != 0:
+            continue
+        jdata = json.load(open(path, "r"))
+        if jdata["sites"][0] not in sites:
+            continue
+                
+        test_file_list.append(path)
     
     # test_file_list = get_unfinished(test_file_list, args.result_dir)
 

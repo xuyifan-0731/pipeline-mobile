@@ -181,18 +181,17 @@ def create_hover_action(
     })
     return action
 
+def map_keys(key_comb: str) -> str:
+    keys = key_comb.split("+")
+    mapped_keys = []
+    for key in keys:
+        mapped_key = SPECIAL_KEY_MAPPINGS.get(key.lower(), key)
+        mapped_keys.append(mapped_key)
+    return "+".join(mapped_keys)
 
 def create_key_press_action(
     key_comb: str
 ):
-    def map_keys(key_comb: str) -> str:
-        keys = key_comb.split("+")
-        mapped_keys = []
-        for key in keys:
-            mapped_key = SPECIAL_KEY_MAPPINGS.get(key.lower(), key)
-            mapped_keys.append(mapped_key)
-        return "+".join(mapped_keys)
-
     action = create_none_action()
     mapped_key_comb = map_keys(key_comb)
     action.update({

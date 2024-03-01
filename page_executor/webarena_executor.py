@@ -9,6 +9,7 @@ import json
 from functools import partial
 
 from ..webarena_tools import (
+    map_keys,
     create_none_action,
     create_stop_action,
     create_click_action,
@@ -32,6 +33,7 @@ class WebarenaPageExecutor:
         self.current_screenshot = None
         self.current_return = None
         self.action_return = None
+        self.mac_platform = False if "Mac" not in self.page.evaluate("navigator.platform") else True
 
     def __get_current_status__(self):
         status = {
@@ -160,9 +162,9 @@ class WebarenaPageExecutor:
     def type(self, argument, element):
         instruction, (center_x, center_y), bbox = element
         self.page.mouse.click(center_x, center_y, button='left')
-        self.page.keyboard.press('Meta+A')
+        self.page.keyboard.press(self.match_key('Meta+A'))
         self.page.keyboard.press('Backspace')
-        self.page.keyboard.type(argument)
+        self.page.keyboard.type(self.match_key(argument))
         self.action_return = create_type_action(argument, center_x, center_y)
         self.current_return = {"operation": "do", "action": 'Type',
                                "kwargs": {"argument": argument, "instruction": instruction},
@@ -171,9 +173,9 @@ class WebarenaPageExecutor:
     def search(self, argument, element):
         instruction, (center_x, center_y), bbox = element
         self.page.mouse.click(center_x, center_y, button='left')
-        self.page.keyboard.press('Meta+A')
+        self.page.keyboard.press(self.match_key('Meta+A'))
         self.page.keyboard.press('Backspace')
-        self.page.keyboard.type(argument)
+        self.page.keyboard.type(self.match_key(argument))
         self.page.keyboard.press('Enter')
         self.action_return = create_type_action(argument + '\n', center_x, center_y, True)
         self.current_return = {"operation": "do", "action": 'Search',
@@ -199,7 +201,7 @@ class WebarenaPageExecutor:
         self.current_return = {"operation": "do", "action": 'Scroll Down'}
 
     def press_key(self, argument):
-        self.page.keyboard.press(argument)
+        self.page.keyboard.press(self.match_key(argument))
         self.action_return = create_key_press_action(argument)
         self.current_return = {"operation": "do", "action": 'Press Key', "kwargs": {"argument": argument}}
 
@@ -207,4 +209,9 @@ class WebarenaPageExecutor:
         self.page.wait_for_timeout(5000)
         self.action_return = create_none_action()
         self.current_return = {"operation": "do", "action": 'Wait'}
-
+        
+    def match_key(self, key_comb: str):
+        key = map_keys(key_comb)
+        if "Meta" in key and not self.mac_platform:
+            key = key.replace("Meta", "Control")        
+        return key

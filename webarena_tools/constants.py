@@ -72,6 +72,7 @@ SPECIAL_KEY_MAPPINGS = {
     "f10": "F10",
     "f11": "F11",
     "f12": "F12",
+    "ctrl": "Control",
 }
 
 DEFAULT_VIEWPORT = {
