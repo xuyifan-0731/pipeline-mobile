@@ -12,15 +12,6 @@ def format_bbox(bbox, window=(1280, 720)):
     return f"{x1:03d},{y1:03d},{x2:03d},{y2:03d}"
 
 
-def plot_bbox(bbox, CURRENT_SCREENSHOT):
-    image = cv2.imread(CURRENT_SCREENSHOT)
-    bbox = [int(i) for i in bbox]
-    cv2.rectangle(image, (bbox[0], bbox[1]), (bbox[0] + bbox[2], bbox[1] + bbox[3]), (0, 255, 0), 2)
-    # cv2.putText(image, prompt, (int(bbox[0] * 0.3), int(bbox[1] * 0.1)), fontFace=cv2.FONT_HERSHEY_SIMPLEX,
-    #             fontScale=0.5, color=(0, 0, 0), thickness=2)
-    cv2.imwrite(CURRENT_SCREENSHOT.replace('.png', '-dino-test.png'), image)
-
-
 def draw_rectangle_on_image(image_path, bbox_string):
     image_obj = Image.open(image_path)
     # Initialize ImageDraw
@@ -36,6 +27,8 @@ def draw_rectangle_on_image(image_path, bbox_string):
     draw.rectangle(rect_coords, outline='green', width=2)
     image_obj.save(image_path.replace('.png', '-image-draw-test.png'))
 
+    return image_path.replace('.png', '-image-draw-test.png')
+
 
 def call_box2caption(bbox, screenshot_path, window=(1280, 720)):
     files = {'image': open(screenshot_path, 'rb')}
@@ -47,10 +40,8 @@ def call_box2caption(bbox, screenshot_path, window=(1280, 720)):
 
 if __name__ == '__main__':
     # instruct, screenshot = sys.argv[1], sys.argv[2]
-    screenshot = "test_cases/reddit-3.png"
-    # bbox = (154.16, 279.67, 29.86, 14.00)
-    # bbox = (151.16, 685.22, 60.45, 14)
-    bbox = (1002.1, 432.13, 108.25, 37)  # x, y, w, h
-    plot_bbox(bbox, screenshot)
-    draw_rectangle_on_image(screenshot, format_bbox(bbox))
-    print(call_box2caption(bbox, screenshot))
+    screenshot = "test_cases/reddit.png"
+    bbox = (154.16, 279.67, 29.86, 14.00)  # "test_cases/reddit.png" x, y, w, h
+    # bbox = (151.16, 685.22, 60.45, 14)  # "test_cases/reddit-2.png" x, y, w, h
+    # bbox = (1002.1, 432.13, 108.25, 37)  # "test_cases/reddit-3.png" x, y, w, h
+    print(call_box2caption(bbox, draw_rectangle_on_image(screenshot, format_bbox(bbox))))
