@@ -12,3 +12,16 @@ BeautifulSoup4
 toml
 aioconsole
 python-dotenv
+gymnasium
+Pillow
+evaluate
+types-tqdm
+tiktoken
+aiolimiter
+beartype==0.12.0
+flask
+nltk
+text-generation
+transformers==4.33.2
+sentencepiece==0.2.0
+opencv-python

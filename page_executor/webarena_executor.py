@@ -21,13 +21,13 @@ from ..webarena_tools import (
 )
 
 class WebarenaPageExecutor:
-    def __init__(self, context, page, engine, screenshot_dir):
+    def __init__(self, context, page, engine, screenshot_dir, options={}):
         self.context = context
         self.page = page
         self.engine = engine
         self.screenshot_dir = screenshot_dir
-        self.task_id = int(time.time())
-        os.makedirs(f'{self.screenshot_dir}/{self.task_id}')
+        self.task_id = int(options.get("task_id", time.time()))
+        os.makedirs(f'{self.screenshot_dir}/{self.task_id}', exist_ok=True)
 
         self.new_page_captured = False
         self.current_screenshot = None
@@ -88,7 +88,7 @@ class WebarenaPageExecutor:
         while self.new_page_captured:
             time.sleep(0.1)
         self.page.screenshot(path=self.current_screenshot)
-        print("Screenshot saved.")
+        print(f"Screenshot saved at {self.current_screenshot}.")
 
     def reach_page_bottom(self):
         scroll_position = self.page.evaluate("window.pageYOffset")  # Current scroll position from the top

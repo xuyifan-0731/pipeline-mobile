@@ -79,7 +79,8 @@ def run(
         context=context,
         page=page,
         engine=openai_engine,
-        screenshot_dir=os.getenv('SCREENSHOT_DIR')
+        screenshot_dir=os.getenv('SCREENSHOT_DIR'),
+        options=options,
     )
     page_executor.__update_screenshot__()
     record = JSONRecorder(instruction=instruction, page_executor=page_executor)
@@ -89,6 +90,7 @@ def run(
     while record.turn_number <= options.get("max_steps", 30):
         stt = time.time()
         prompt = page_executor.__get_current_status__() if record.turn_number > 0 else instruction
+        print('model generating...')
         content = openai_engine.generate(
             prompt=prompt,
             image_path=page_executor.current_screenshot,
@@ -97,12 +99,12 @@ def run(
         )
         
         # content = '```\n'+ input(prompt+'\n') + '\n```'
-        
         record.update_response(page, content)
         print(content)
         print('[Predict Time]', time.time() - stt)
         
         stt = time.time()
+        print('system executing...')
         exe_res = page_executor(get_code_snippet(content))
         record.update_execution(exe_res)
         actions.append(page_executor.action_return)
@@ -167,7 +169,8 @@ def test(args: argparse.Namespace, config_file_list: list[str]) -> None:
                 "width": args.viewport_width,
                 "height": args.viewport_height
             },
-            "max_steps": args.max_steps
+            "max_steps": args.max_steps,
+            "task_id": task_id,
         }
          
         with sync_playwright() as playwright:
@@ -225,7 +228,7 @@ if __name__ == '__main__':
 
     args = config()
     args.sleep_after_execution = 2.0
-    prepare(args)
+    # prepare(args)
 
     test_file_list = []
     st_idx = args.start_idx

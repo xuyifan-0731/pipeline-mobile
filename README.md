@@ -65,3 +65,72 @@ if reload_history:
 * 查看这个轮次对应的截图内容是否正确，第i轮，应该查看第i-1轮的截图。
 * 执行加载历史的程序之后，程序会第一次暂停，请按照控制台中输出的action，在新打开的浏览器页面中执行对应的操作，并回车。即可执行后续指令。
 
+## Webarena 评测
+
+首先需要从 dgx1 上转发端口到本地／开发机上：
+
+```bash
+ssh -fNL localhost:4399:localhost:4399 webarena@36.102.215.18 -p 2201
+ssh -fNL localhost:7770:localhost:7770 webarena@36.102.215.18 -p 2201
+ssh -fNL localhost:7780:localhost:7780 webarena@36.102.215.18 -p 2201
+ssh -fNL localhost:8023:localhost:8023 webarena@36.102.215.18 -p 2201
+ssh -fNL localhost:8888:localhost:8888 webarena@36.102.215.18 -p 2201
+ssh -fNL localhost:9999:localhost:9999 webarena@36.102.215.18 -p 2201
+```
+
+进入 Pipeline 文件夹（仓库根目录下），添加环境文件 `.env`，并修改内容如下： 
+
+```bash
+GPT4V_TOKEN="<your-openapi-key>"
+TRACE_DIR="./traces"
+SCREENSHOT_DIR="./screenshots"
+
+SHOPPING="http://localhost:7770"
+SHOPPING_ADMIN="http://localhost:7780/admin"
+REDDIT="http://localhost:9999"
+GITLAB="http://localhost:8023"
+MAP="http://ec2-3-131-244-37.us-east-2.compute.amazonaws.com:3000/"
+WIKIPEDIA="http://localhost:8888/wikipedia_en_all_maxi_2022-05/A/User:The_other_Kiwix_guy/Landing"
+HOMEPAGE="http://localhost:4399"
+```
+
+注意：需要更改 api-key 和端口为你实际使用的值。
+
+接着需要配置环境：
+
+```bash
+conda create -n webarena python=3.10
+conda activate webarena
+pip install -r requirements.txt
+playwright install
+playwright install-deps
+# install tmux for parallel test
+apt-get update
+apt install tmux -y
+```
+
+还需要使用 python 安装分词工具：
+
+```python
+# run this in python
+import nltk
+nltk.download('punkt')
+```
+
+然后运行 `bash webarena_test.sh` 生成测试数据和网页认证信息；
+
+最后执行下面的指令即可开始评测：
+
+```bash
+python -m Pipeline.pipelines.webarena_test
+```
+
+| 参数        | 类型 | 用途                                               |
+| ----------- | ---- | -------------------------------------------------- |
+| --start_idx | int  | 指定测试开始的任务编号                             |
+| --end_idx   | int  | 指定测试结束的任务编号                             |
+| --sample    | int  | 仅测试编号为 sample 整数倍的任务                   |
+| --max_steps | int  | 每一个任务的最大交互回合数                         |
+| --sites     | str  | 仅测试包含 sites 网页的任务，网页间用半型逗号分开* |
+
+*网页可选项：shopping,shopping_admin,gitlab,reddit,wikipedia，默认全选。
