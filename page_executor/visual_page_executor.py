@@ -22,6 +22,8 @@ class SyncVisualPageExecutor:
         self.current_screenshot = None
         self.current_return = None
 
+        self.device_pixel_ratio = self.page.evaluate("window.devicePixelRatio")
+
     def __get_current_status__(self):
         status = {
             "Current URL": self.page.url,
@@ -133,19 +135,19 @@ class SyncVisualPageExecutor:
     # Implement sub-actions of do
     def click(self, element):
         instruction, (center_x, center_y), bbox = element
-        self.page.mouse.click(center_x, center_y)
+        self.page.mouse.click(center_x / self.device_pixel_ratio, center_y / self.device_pixel_ratio)
         self.current_return = {"operation": "do", "action": 'Click', "kwargs": {"instruction": instruction},
                                "bbox": bbox}
 
     def right_click(self, element):
         instruction, (center_x, center_y), bbox = element
-        self.page.mouse.click(center_x, center_y, button="right")
+        self.page.mouse.click(center_x / self.device_pixel_ratio, center_y / self.device_pixel_ratio, button="right")
         self.current_return = {"operation": "do", "action": 'Click', "kwargs": {"instruction": instruction},
                                "bbox": bbox}
 
     def type(self, argument, element):
         instruction, (center_x, center_y), bbox = element
-        self.page.mouse.click(center_x, center_y, button='left')
+        self.page.mouse.click(center_x / self.device_pixel_ratio, center_y / self.device_pixel_ratio, button='left')
         self.page.keyboard.press('Meta+A')
         self.page.keyboard.press('Backspace')
         self.page.keyboard.type(argument)
@@ -155,7 +157,7 @@ class SyncVisualPageExecutor:
 
     def search(self, argument, element):
         instruction, (center_x, center_y), bbox = element
-        self.page.mouse.click(center_x, center_y, button='left')
+        self.page.mouse.click(center_x / self.device_pixel_ratio, center_y / self.device_pixel_ratio, button='left')
         self.page.keyboard.press('Meta+A')
         self.page.keyboard.press('Backspace')
         self.page.keyboard.type(argument)
@@ -166,7 +168,7 @@ class SyncVisualPageExecutor:
 
     def hover(self, element):
         instruction, (center_x, center_y), bbox = element
-        self.page.mouse.move(center_x, center_y)
+        self.page.mouse.move(center_x / self.device_pixel_ratio, center_y / self.device_pixel_ratio)
         self.page.wait_for_timeout(500)
         self.current_return = {"operation": "do", "action": 'Hover', "kwargs": {"instruction": instruction},
                                "bbox": bbox}

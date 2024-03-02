@@ -32,7 +32,7 @@ def draw_rectangle_on_image(image_path, bbox_string):
 
 def call_box2caption(bbox, screenshot_path, window=(1280, 720)):
     files = {'image': open(screenshot_path, 'rb')}
-    instruction = f"Tell me what you see within the designated area [[{format_bbox(bbox, window)}]] in the screenshot."
+    instruction = f"Tell me what you see within the green-frame bounding area [[{format_bbox(bbox, window)}]] in the screenshot."
     response = requests.post("http://172.19.64.21:24025/v1/box2caption", files=files,
                              data={"text_prompt": instruction})
     return response.json()['response']
