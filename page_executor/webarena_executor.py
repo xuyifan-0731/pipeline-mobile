@@ -32,7 +32,7 @@ class WebarenaPageExecutor:
         self.new_page_captured = False
         self.current_screenshot = None
         self.current_return = None
-        self.action_return = None
+        self.action_return = create_none_action()
         self.mac_platform = False if "Mac" not in self.page.evaluate("navigator.platform") else True
 
     def __get_current_status__(self):

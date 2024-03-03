@@ -83,38 +83,47 @@ def run(
         options=options,
     )
     page_executor.__update_screenshot__()
-    record = JSONRecorder(instruction=instruction, page_executor=page_executor)
+    record = JSONRecorder(
+        instruction=instruction,
+        page_executor=page_executor,
+        options=options,
+    )
     print('[Setup Time]', time.time() - stt)
     
     actions = []
+    
     while record.turn_number <= options.get("max_steps", 30):
-        stt = time.time()
-        prompt = page_executor.__get_current_status__() if record.turn_number > 0 else instruction
-        print('model generating...')
-        content = openai_engine.generate(
-            prompt=prompt,
-            image_path=page_executor.current_screenshot,
-            turn_number=record.turn_number,
-            ouput__0=record.format_history()
-        )
-        
-        # content = '```\n'+ input(prompt+'\n') + '\n```'
-        record.update_response(page, content)
-        print(content)
-        print('[Predict Time]', time.time() - stt)
-        
-        stt = time.time()
-        print('system executing...')
-        exe_res = page_executor(get_code_snippet(content))
-        record.update_execution(exe_res)
-        actions.append(page_executor.action_return)
-        print(page_executor.action_return)
-        print('[Execute Time]', time.time() - stt)
-        
-        if exe_res['operation'] == 'exit':
-            break
+        try:
+            stt = time.time()
+            prompt = page_executor.__get_current_status__() if record.turn_number > 0 else instruction
+            print('model generating...')
+            content = openai_engine.generate(
+                prompt=prompt,
+                image_path=page_executor.current_screenshot,
+                turn_number=record.turn_number,
+                ouput__0=record.format_history(),
+                sys_prompt=options.get("sites", "basic")[0]
+            )
+            
+            # content = '```\n'+ input(prompt+'\n') + '\n```'
+            record.update_response(page, content)
+            print(content)
+            print('[Predict Time]', time.time() - stt)
+            
+            stt = time.time()
+            print('system executing...')
+            exe_res = page_executor(get_code_snippet(content))
+            record.update_execution(exe_res)
+            actions.append(page_executor.action_return)
+            print(page_executor.action_return)
+            print('[Execute Time]', time.time() - stt)
+            
+            if exe_res['operation'] == 'exit':
+                break
 
-        record.turn_number += 1
+            record.turn_number += 1
+        except:
+            pass
         
     evaluator = evaluator_router(config_file)
     score = evaluator(
@@ -128,6 +137,19 @@ def run(
         logger.info(f"[Result] (PASS) {config_file}")
     else:
         logger.info(f"[Result] (FAIL) {config_file}")
+    
+    task_id = options.get("task_id", -1)
+    
+    out_path = os.path.join(options.get("result_dir", "."), "traces", f"{task_id}.json")
+    for action in actions:
+        action["coords"] = action["coords"].tolist()
+    
+    obj = {
+        "task_id": options.get("task_id", -1),
+        "score": score,
+        "actions": actions
+    }
+    json.dump(obj, open(out_path, "w"))
         
     return score
 
@@ -139,6 +161,7 @@ def test(args: argparse.Namespace, config_file_list: list[str]) -> None:
             _c = json.load(f)
             intent = _c["intent"]
             task_id = _c["task_id"]
+            sites = _c["sites"]
             # automatically login
             if _c["storage_state"]:
                 cookie_file_name = os.path.basename(_c["storage_state"])
@@ -171,6 +194,8 @@ def test(args: argparse.Namespace, config_file_list: list[str]) -> None:
             },
             "max_steps": args.max_steps,
             "task_id": task_id,
+            "sites": sites,
+            "result_dir": args.result_dir,
         }
          
         with sync_playwright() as playwright:
@@ -199,7 +224,7 @@ def config() -> argparse.Namespace:
     parser.add_argument("--start_idx", type=int, default=0)
     parser.add_argument("--end_idx", type=int, default=1000)
     parser.add_argument("--sample", type=int, default=1)
-    parser.add_argument("--sites", type=str, default="shopping,shopping_admin,gitlab,reddit,wikipedia")
+    parser.add_argument("--sites", type=str, default="shopping,shopping_admin,gitlab,reddit,wikipedia,map")
 
     # logging related
     parser.add_argument("--result_dir", type=str, default="")
@@ -212,6 +237,7 @@ def prepare(args: argparse.Namespace) -> None:
     result_dir = args.result_dir
     if not result_dir:
         result_dir = f"cache/results_{time.strftime('%Y%m%d%H%M%S', time.localtime())}"
+        args.result_dir = result_dir
     
     # os.makedirs("temp", exist_ok=True)
     # os.makedirs("dev", exist_ok=True)
@@ -223,12 +249,24 @@ def prepare(args: argparse.Namespace) -> None:
     with open(os.path.join(result_dir, "log_files.txt"), "a+") as f:
         f.write(f"{LOG_FILE_NAME}\n")
 
+def get_unfinished(config_files: list[str], result_dir: str) -> list[str]:
+    result_files = glob.glob(os.path.join(result_dir, "traces/*.json"))
+    task_ids = [
+        os.path.basename(f).split(".")[0] for f in result_files
+    ]
+    unfinished_configs = []
+    for config_file in config_files:
+        task_id = os.path.basename(config_file).split(".")[0]
+        if task_id not in task_ids:
+            unfinished_configs.append(config_file)
+    return unfinished_configs
+
 if __name__ == '__main__':
     print(ROOT_PATH)
 
     args = config()
     args.sleep_after_execution = 2.0
-    # prepare(args)
+    prepare(args)
 
     test_file_list = []
     st_idx = args.start_idx
@@ -248,7 +286,7 @@ if __name__ == '__main__':
                 
         test_file_list.append(path)
     
-    # test_file_list = get_unfinished(test_file_list, args.result_dir)
+    test_file_list = get_unfinished(test_file_list, args.result_dir)
 
     if len(test_file_list) == 0:
         logger.info("No task left to run")

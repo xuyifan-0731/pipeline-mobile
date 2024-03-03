@@ -9,8 +9,9 @@ from openai.error import (
     ServiceUnavailableError,
     InvalidRequestError
 )
-# from .templates.template_with_loop import SYSTEM_PROMPT
-from .templates.webarena_template import SYSTEM_PROMPT
+
+from .templates.template_with_loop import SYSTEM_PROMPT
+from .templates import system_templates
 
 import base64
 from dotenv import load_dotenv
@@ -103,7 +104,7 @@ class OpenaiEngine(Engine):
         (APIError, RateLimitError, APIConnectionError, ServiceUnavailableError, InvalidRequestError),
     )
     def generate(self, prompt: str, max_new_tokens=4096, temperature=None, model=None, image_path=None,
-                 ouput__0=None, turn_number=0, current_feedback=None, **kwargs):
+                 ouput__0=None, turn_number=0, current_feedback=None, sys_prompt="", **kwargs):
         start_time = time.time()
         if (
                 self.request_interval > 0
@@ -111,10 +112,12 @@ class OpenaiEngine(Engine):
         ):
             time.sleep(self.next_avil_time[self.current_key_idx] - start_time)
 
+        system_prompt = system_templates.get(sys_prompt, SYSTEM_PROMPT)
+        
         if turn_number == 0:
             # Assume one turn dialogue
             prompt1_input = [
-                {"role": "system", "content": [{"type": "text", "text": SYSTEM_PROMPT}]},
+                {"role": "system", "content": [{"type": "text", "text": system_prompt}]},
                 {"role": "user", "content": [{"type": "text", "text": prompt}]},
             ]
             response1 = openai.ChatCompletion.create(
@@ -129,7 +132,7 @@ class OpenaiEngine(Engine):
             return answer1
         elif turn_number > 0:
             base64_image = encode_image(image_path)
-            prompt2_input = [{"role": "system", "content": [{"type": "text", "text": SYSTEM_PROMPT}]}] + \
+            prompt2_input = [{"role": "system", "content": [{"type": "text", "text": system_prompt}]}] + \
                             ouput__0 + \
                             [
                                 {"role": "user", "content": [

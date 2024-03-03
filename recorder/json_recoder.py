@@ -13,8 +13,8 @@ os.makedirs(SCREENSHOT_DIR, exist_ok=True)
 
 
 class JSONRecorder:
-    def __init__(self, instruction, page_executor):
-        self.id = int(time.time())
+    def __init__(self, instruction, page_executor, options={}):
+        self.id = int(options.get("task_id", time.time()))
         self.instruction = instruction
         self.page_executor = page_executor
 

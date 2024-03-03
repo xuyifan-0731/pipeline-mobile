@@ -122,7 +122,10 @@ nltk.download('punkt')
 最后执行下面的指令即可开始评测：
 
 ```bash
+cd ..
 python -m Pipeline.pipelines.webarena_test
+# or
+bash Pipeline/parallel.sh
 ```
 
 | 参数        | 类型 | 用途                                               |
