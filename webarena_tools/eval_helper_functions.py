@@ -163,9 +163,10 @@ def llm_fuzzy_match(pred: str, reference: str, question: str) -> float:
     ).lower()
     if "partially correct" in response or "incorrect" in response:
         return 0.0
-    else:
-        assert "correct" in response
+    elif "correct" in response:
         return 1.0
+    else:
+        return 0.0
 
 
 def llm_ua_match(pred: str, reference: str, question: str) -> float:
@@ -198,9 +199,10 @@ def llm_ua_match(pred: str, reference: str, question: str) -> float:
     ).lower()
     if "different" in response:
         return 0.0
-    else:
-        assert "same" in response
+    elif "same" in response:
         return 1.0
+    else:
+        return 0.0
 
 
 class PseudoPage:

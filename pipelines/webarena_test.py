@@ -29,6 +29,13 @@ from ..webarena_tools.auto_login import (
     get_site_comb_from_filepath
 )
 
+from ..webarena_tools.actions import (
+    is_equivalent,
+    create_none_action,
+    Action,
+    ActionTypes,
+)
+
 from playwright.sync_api import Playwright, sync_playwright
 
 ROOT_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..")
@@ -66,6 +73,25 @@ def get_code_snippet(content):
         raise RuntimeError()
     code = code.group(1)
     return code
+
+def early_stop(actions: list, threshold: int=5) -> tuple[bool, str]:
+    # Case: same action for k times
+    k = threshold
+    last_k_actions = actions[-k:]  # type: ignore[assignment]
+    
+    if len(last_k_actions) == 0:
+        return False, ""
+
+    last_action: Action = action_seq[-1]
+
+    if len(last_k_actions) >= k:
+        if all([
+            is_equivalent(action, last_action)
+            for action in last_k_actions
+        ]):
+            return True, f"Same action for {k} times"
+
+    return False, ""
 
 def run(
     playwright: Playwright,
@@ -120,10 +146,14 @@ def run(
             
             if exe_res['operation'] == 'exit':
                 break
-
-            record.turn_number += 1
+            
+            if early_stop(actions):
+                actions.append(create_none_action())
+                break
         except:
             pass
+
+        record.turn_number += 1
         
     evaluator = evaluator_router(config_file)
     score = evaluator(
@@ -197,10 +227,13 @@ def test(args: argparse.Namespace, config_file_list: list[str]) -> None:
             "sites": sites,
             "result_dir": args.result_dir,
         }
-         
-        with sync_playwright() as playwright:
-            score = run(playwright, instruction=intent, config_file=config_file, options=options)
-        scores.append(score)
+        
+        try:
+            with sync_playwright() as playwright:
+                score = run(playwright, instruction=intent, config_file=config_file, options=options)
+            scores.append(score)
+        except:
+            logger.info(f"Runtime Error: {config_file}")
 
     scores = [0.0] if len(scores) == 0 else scores
     logger.info(f"Average score: {sum(scores) / len(scores)}")

@@ -100,11 +100,6 @@ class WebarenaPageExecutor:
         print(f"Call reach_page_bottom():\n{val}")
         return val
 
-    def open_url(self, url):
-        self.page.goto(url)
-        self.current_return = {"operation": "open_url", "kwargs": {"url": url}}
-        self.__update_screenshot__()
-
     def do(self, action=None, argument=None, element=None):
         if action == 'Click':
             self.click(element)
@@ -135,8 +130,15 @@ class WebarenaPageExecutor:
     def screenshot_satisfies(self, condition):
         return screenshot_satisfies(self.engine, condition, self.current_screenshot)
 
+    def open_url(self, url):
+        self.page.goto(url)
+        self.current_return = {"operation": "open_url", "kwargs": {"url": url}}
+        self.action_return = create_goto_url_action(url)
+        self.__update_screenshot__()
+        
     def quote(self, content):
         self.current_return = {"operation": "quote", "kwargs": {"content": content}}
+        self.action_return = create_stop_action(content)
         self.__update_screenshot__()
 
     def exit(self, message=None):

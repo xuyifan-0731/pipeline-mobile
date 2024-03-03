@@ -84,7 +84,54 @@ def _keys2ids(keys: list[int | str] | str) -> list[int]:
 def __init__():
     pass
 
-
+def is_equivalent(a: Action, b: Action) -> bool:
+    """Return True if two actions are equal."""
+    if a["action_type"] != b["action_type"]:
+        return False
+    match (a["action_type"]):
+        case ActionTypes.NONE:
+            return True
+        case ActionTypes.SCROLL:
+            da = "up" if "up" in a["direction"] else "down"
+            db = "up" if "up" in b["direction"] else "down"
+            return da == db
+        case ActionTypes.KEY_PRESS:
+            return a["key_comb"] == b["key_comb"]
+        case ActionTypes.MOUSE_CLICK | ActionTypes.MOUSE_HOVER:
+            return np.allclose(a["coords"], b["coords"])
+        case ActionTypes.KEYBOARD_TYPE:
+            return a["text"] == b["text"]
+        case ActionTypes.CLICK | ActionTypes.HOVER | ActionTypes.TYPE:  # TODO: can be further optimized
+            if a["element_id"] and b["element_id"]:
+                return a["element_id"] == b["element_id"]
+            elif a["element_role"] and b["element_role"]:
+                return (
+                    a["element_role"] == b["element_role"]
+                    and a["element_name"] == b["element_name"]
+                )
+            elif a["pw_code"] and b["pw_code"]:
+                return a["pw_code"] == b["pw_code"]
+            else:
+                return False
+        case ActionTypes.PAGE_FOCUS:
+            return a["page_number"] == b["page_number"]
+        case ActionTypes.NEW_TAB:
+            return True
+        case ActionTypes.GO_BACK:
+            return True
+        case ActionTypes.GO_FORWARD:
+            return True
+        case ActionTypes.GOTO_URL:
+            return a["url"] == b["url"]
+        case ActionTypes.PAGE_CLOSE:
+            return True
+        case ActionTypes.CHECK | ActionTypes.SELECT_OPTION:
+            return a["pw_code"] == b["pw_code"]
+        case ActionTypes.STOP:
+            return a["answer"] == b["answer"]
+        case _:
+            return False
+        
 def create_none_action():
     return {
         "action_type": ActionTypes.NONE,
