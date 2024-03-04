@@ -21,6 +21,10 @@ class JSONRecorder:
         self.turn_number = 0
         self.file_path = f'{TRACE_DIR}/{self.id}.jsonl'
         self.contents = []
+        
+        if "reset" in options:
+            with open(self.file_path, 'w') as f:
+                f.write('')
 
     def update_response(self, page, response, prompt="** screenshot **"):
         step = {

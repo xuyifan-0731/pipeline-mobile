@@ -123,17 +123,25 @@ nltk.download('punkt')
 
 ```bash
 cd ..
-python -m Pipeline.pipelines.webarena_test
-# or
-bash Pipeline/parallel.sh
+python -m Pipeline.pipelines.webarena_test --result_dir result
+# eval
+python Pipeline/webarena_tools/score.py result
 ```
 
 | 参数        | 类型 | 用途                                               |
 | ----------- | ---- | -------------------------------------------------- |
 | --start_idx | int  | 指定测试开始的任务编号                             |
 | --end_idx   | int  | 指定测试结束的任务编号                             |
-| --sample    | int  | 仅测试编号为 sample 整数倍的任务                   |
+| --sample    | int  | 仅测试编号为 sample 整数倍的任务 (全集测试请设为1) |
 | --max_steps | int  | 每一个任务的最大交互回合数                         |
+| --result_dir | str  | webarena 操作序列保存位置，主要用于分数计算   |
 | --sites     | str  | 仅测试包含 sites 网页的任务，网页间用半型逗号分开* |
 
 *网页可选项：shopping,shopping_admin,gitlab,reddit,wikipedia，默认全选。
+
+多线程评测可使用下面的指令，注意更改 `parallel.sh` 内的 SAMPLE 和 run XX YY ZZ 来控制每进程的评测任务编号。
+
+```bash
+bash Pipeline/parallel.sh
+```
+

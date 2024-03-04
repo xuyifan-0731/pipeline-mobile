@@ -1,7 +1,8 @@
 #!/bin/bash
 
-result_dir="result/"
+result_dir="result"
 CONDA_ENV_NAME="webarena"
+SAMPLE=19
 
 # get the number of tmux panes
 num_panes=$(tmux list-panes | wc -l)
@@ -35,7 +36,7 @@ done
 
 run_job() {
     tmux select-pane -t $1
-    tmux send-keys "conda activate ${CONDA_ENV_NAME}; until python -m Pipeline.pipelines.webarena_test --start_idx $2 --end_idx $3 --result_dir ${result_dir} --sample 13; do echo 'crashed' >&2; sleep 1; done" C-m
+    tmux send-keys "conda activate ${CONDA_ENV_NAME}; until python -m Pipeline.pipelines.webarena_test --start_idx $2 --end_idx $3 --result_dir ${result_dir} --sample ${SAMPLE}; do echo 'crashed' >&2; sleep 1; done" C-m
     sleep 3
 }
 
@@ -55,4 +56,4 @@ run_batch() {
 
 # run_batch 0 136 271 406 542 677 812
 run_batch 0 271 542 812
-# python get_result.py ${result_dir}
+python Pipeline/webarena_tools/score.py ${result_dir}
