@@ -13,6 +13,14 @@ openai_engine = OpenaiEngine()
 config_path = os.path.join(os.path.dirname(__file__), '.env')
 load_dotenv(config_path)
 
+TRACE_DIR = os.environ.get('TRACE_DIR')
+SCREENSHOT_DIR = os.environ.get('SCREENSHOT_DIR')
+if TRACE_DIR is None:
+    TRACE_DIR = '../traces'
+if SCREENSHOT_DIR is None:
+    SCREENSHOT_DIR = '../temp'
+os.makedirs(TRACE_DIR, exist_ok=True)
+os.makedirs(SCREENSHOT_DIR, exist_ok=True)
 
 def get_code_snippet(content):
     code = re.search(r'```.*?\n([\s\S]+?)\n```', content)
@@ -42,7 +50,7 @@ def run(playwright: Playwright, instruction=None) -> None:
     page_executor = SyncVisualPageExecutor(context=context, page=page, engine=openai_engine,
                                            screenshot_dir=os.getenv('SCREENSHOT_DIR'))
     instruction = input("What would you like to do? >>> ") if instruction is None else instruction
-    record = JSONRecorder(instruction=instruction, page_executor=page_executor)
+    record = JSONRecorder(instruction=instruction, page_executor=page_executor, trace_path=TRACE_DIR)
 
     while record.turn_number <= 100:
         prompt = page_executor.__get_current_status__() if record.turn_number > 0 else instruction
