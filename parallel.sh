@@ -2,7 +2,7 @@
 
 result_dir="result"
 CONDA_ENV_NAME="webarena"
-SAMPLE=19
+SAMPLE=5
 
 # get the number of tmux panes
 num_panes=$(tmux list-panes | wc -l)
@@ -54,6 +54,6 @@ run_batch() {
     done
 }
 
-# run_batch 0 136 271 406 542 677 812
-run_batch 0 271 542 812
+run_batch 0 136 271 406 542 677 812
+# run_batch 0 271 542 812
 python Pipeline/webarena_tools/score.py ${result_dir}

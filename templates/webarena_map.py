@@ -76,24 +76,10 @@ def exit(message):
 
 # A toy example
 <|user|>
-Please solve my question based on http://ec2-3-131-244-37.us-east-2.compute.amazonaws.com:3000/. Compare the time for walking and driving route from 5000 Fifth Avenue, Pittsburgh to UPMC family health center
+Compare the time for walking and driving route from 5000 Fifth Avenue, Pittsburgh to UPMC family health center
 
 <|assistant|>
 ## Round 0
-* Analysis: The user wants to compare the time for walking and driving routes from one location to another using a specific website. I should first open the provided URL.
-* Plan:
-1. Open the URL "http://ec2-3-131-244-37.us-east-2.compute.amazonaws.com:3000/".
-* Operation:
-
-```
-open_url(url="http://ec2-3-131-244-37.us-east-2.compute.amazonaws.com:3000/")
-```
-
-<|user|>
-** screenshot **
-
-<|assistant|>
-## Round 1
 * Confirm: The screenshot shows the interface of the website user specified.
 * Analysis: I need to search for the distance between 5000 Fifth Avenue, Pittsburgh to UPMC family health center.
 * Plan:
@@ -108,7 +94,7 @@ do(action="Click", element=find_element_by_instruction(instruction="the directio
 ** screenshot **
 
 <|assistant|>
-## Round 2
+## Round 1
 * Confirm: The screenshot shows the direction interface, but the starting point and destination point are not set to.
 * Analysis: I need to set the starting point manually by typing \"5000 Fifth Avenue, Pittsburgh\" into the starting point field.
 * Plan:
@@ -124,7 +110,7 @@ Argument: 5000 Fifth Avenue, Pittsburgh
 ** screenshot **
 
 <|assistant|>
-## Round 3
+## Round 2
 * Confirm: The screenshot shows that the starting point field has been filled with \"5000 Fifth Avenue, Pittsburgh\", but the destination point are not set to.
 * Analysis: I need to set the destination point manually by typing \"UPMC family health center\" into the destination point field.
 * Plan:
@@ -140,7 +126,7 @@ Argument: UPMC family health center
 ** screenshot **
 
 <|assistant|>
-## Round 4
+## Round 3
 * Confirm: The screenshot shows that the starting point field and destination point file have been filled. 
 * Analysis: I need to confirm the search to get driving directions from 5000 Fifth Avenue, Pittsburgh to UPMC family health center.
 * Plan:
@@ -155,7 +141,7 @@ do(action=\"Press Key\", argument=\"Enter\", element=None)
 ** screenshot **
 
 <|assistant|>
-## Round 5
+## Round 4
 * Confirm: The screenshot shows the driving and time from 5000 Fifth Avenue, Pittsburgh to UPMC family health center, with an estimated driving time of 2 minutes. 
 * Analysis: I have found partial information the user requested. I should quote this information.
 * Plan:
@@ -170,7 +156,7 @@ quote(content=\"Driving time from 5000 Fifth Avenue, Pittsburgh to UPMC family h
 ** screenshot **
 
 <|assistant|>
-## Round 6
+## Round 5
 * Confirm: The screenshot shows the driving time from 5000 Fifth Avenue, Pittsburgh to UPMC family health center, but do not shows walking time. 
 * Analysis: I need to click the the dropdown menu above the Reverse Directions to change the mode.
 * Plan:
@@ -185,7 +171,7 @@ do(action="Click", element=find_element_by_instruction(instruction="The dropdown
 ** screenshot **
 
 <|assistant|>
-## Round 7
+## Round 6
 * Confirm: The screenshot shows the available transportation options from 5000 Fifth Avenue, Pittsburgh to UPMC family health center. 
 * Analysis: I need to search and select Foot option in the manu.
 * Plan:
@@ -201,7 +187,7 @@ Argument: Foot
 ** screenshot **
 
 <|assistant|>
-## Round 8
+## Round 7
 * Confirm: The screenshot shows the walking distence and time from 5000 Fifth Avenue, Pittsburgh to UPMC family health center, with an estimated walking time of 16 minutes. 
 * Analysis: I have found all the information the user requested. I should quote this information and then exit.
 * Plan:
@@ -224,6 +210,6 @@ REMEMBER:
 - If you think you didn't get expected webpage, it might be due to that `find_element*` found wrong element. You should try using more precise and locative description of the element.
 - You must make sure the target element of `find_element*` exists on current screenshot, if not, you should navigate to the target place first.
 - You must identify potential errors or mistakes made by `find_element*` function and correct them. If the webpage is not as expected, you should try to re-do or un-do the operation.
-- On a dropdown element (Calendar, Nationality, Language, Transportation, etc.), first try directly typing in the option you want.
+- On a dropdown element (Calendar, Nationality, Language, Transportation, etc.), first try directly using Search action to select the option you want.
 - Direction sign: When you want to search the distance from one place to another place, you should click the direction sign to achieve it, instead of searh bar. 
 '''

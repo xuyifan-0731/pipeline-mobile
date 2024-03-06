@@ -6,10 +6,14 @@ from .api_utils import screenshot_satisfies
 import time
 import inspect
 import json
+import signal
+import shutil
 from functools import partial
 
 from ..webarena_tools import (
     map_keys,
+    map_url_to_real,
+    map_url_to_local,
     create_none_action,
     create_stop_action,
     create_click_action,
@@ -20,6 +24,15 @@ from ..webarena_tools import (
     create_scroll_action
 )
 
+class TimeoutException(Exception):
+    pass
+
+def timeout_handler(signum, frame):
+    raise TimeoutException
+
+signal.signal(signal.SIGALRM, timeout_handler)
+
+
 class WebarenaPageExecutor:
     def __init__(self, context, page, engine, screenshot_dir, options={}):
         self.context = context
@@ -27,7 +40,10 @@ class WebarenaPageExecutor:
         self.engine = engine
         self.screenshot_dir = screenshot_dir
         self.task_id = int(options.get("task_id", time.time()))
-        os.makedirs(f'{self.screenshot_dir}/{self.task_id}', exist_ok=True)
+        
+        output_dir = os.path.join(self.screenshot_dir, f"{self.task_id}")
+        os.makedirs(output_dir, exist_ok=True)
+        shutil.rmtree(output_dir)
 
         self.new_page_captured = False
         self.current_screenshot = None
@@ -37,7 +53,7 @@ class WebarenaPageExecutor:
 
     def __get_current_status__(self):
         status = {
-            "Current URL": self.page.url,
+            "Current URL": map_url_to_real(self.page.url),
             "document.body.scrollHeight": self.page.evaluate("document.body.scrollHeight"),
             "window.pageYOffset": self.page.evaluate("window.pageYOffset"),
             "window.innerHeight": self.page.evaluate("window.innerHeight")
@@ -57,8 +73,19 @@ class WebarenaPageExecutor:
 
         local_context = self.__get_class_methods__()
         local_context.update(**{'self': self})
-        exec(code_snippet, {}, local_context)
-
+        
+        signal.alarm(30)
+        try:
+            exec(code_snippet, {}, local_context)
+            signal.alarm(0)
+        except:
+            error_msg = f"The following code generates an unexpected error, you should NEVER try this again:\n```\n{code_snippet}\n```"
+            self.current_return = {"operation": "quote", "kwargs": {"content": error_msg}}
+            action = create_none_action()
+            action["text"] = error_msg
+            self.action_return = action
+        
+            
         return self.current_return
 
     def __get_class_methods__(self, include_dunder=False, exclude_inherited=True):
@@ -82,12 +109,14 @@ class WebarenaPageExecutor:
 
     def __update_screenshot__(self):
         time.sleep(5)
-        self.current_screenshot = f"{self.screenshot_dir}/{self.task_id}/screenshot-{time.time()}.png"
+        current_screenshot = os.path.join(self.screenshot_dir, f"{self.task_id}", f"screenshot-{time.time()}.png")
         _ = self.page.viewport_size
         self.page.screenshot(path="/dev/null")
         while self.new_page_captured:
             time.sleep(0.1)
-        self.page.screenshot(path=self.current_screenshot)
+        self.page.screenshot(path=current_screenshot)
+        
+        self.current_screenshot = current_screenshot
         print(f"Screenshot saved at {self.current_screenshot}.")
 
     def reach_page_bottom(self):
@@ -131,14 +160,15 @@ class WebarenaPageExecutor:
         return screenshot_satisfies(self.engine, condition, self.current_screenshot)
 
     def open_url(self, url):
-        self.page.goto(url)
+        local_url = map_url_to_local(url)
+        self.page.goto(local_url)
         self.current_return = {"operation": "open_url", "kwargs": {"url": url}}
-        self.action_return = create_goto_url_action(url)
+        self.action_return = create_goto_url_action(local_url)
         self.__update_screenshot__()
         
     def quote(self, content):
         self.current_return = {"operation": "quote", "kwargs": {"content": content}}
-        self.action_return = create_stop_action(content)
+        self.action_return = create_none_action()
         self.__update_screenshot__()
 
     def exit(self, message=None):

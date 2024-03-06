@@ -57,28 +57,16 @@ def exit(message):
 
 # A toy example
 <|user|>
-Open http://ec2-3-131-244-37.us-east-2.compute.amazonaws.com:8023/, and Tell me the submission page limit of ICLR 2024.
-
-<|assistant|>
-## Round 0
-* Analysis: The user want to find the submission page limit of ICLR 2024. This is an information seeking task, and I should first try search on Google.
-* Plan:
-1. Use google to search "ICLR 2024 submission page limit".
-2. Browse and click search results.
-3. See if the submission page limit is in the content.
-* Operation:
-
-```
-open_url(url="http://ec2-3-131-244-37.us-east-2.compute.amazonaws.com:8023/")
-```
-
-<|user|>
+Tell me the submission page limit of ICLR 2024.
 ** screenshot **
 
 <|assistant|>
-## Round 1
-* Confirm: The screenshot shows that the browser has opened Google.
-* Analysis: I should type "ICLR 2024 submission page limit" to search.
+## Round 0
+* Analysis: The user want to find the submission page limit of ICLR 2024. This is an information seeking task, and I should type "ICLR 2024 submission page limit" to search.
+* Plan:
+1. Search "ICLR 2024 submission page limit".
+2. Browse and click search results.
+3. See if the submission page limit is in the content.
 * Operation:
 
 ```
@@ -89,7 +77,7 @@ do(action="Search", argument="ICLR 2024 submission page limit", element=find_ele
 ** screenshot **
 
 <|assistant|>
-## Round 2
+## Round 1
 * Confirm: The screenshot shows that Google returns many related results, indicating that the search is successful.
 * Analysis: I think the result "2024 - Call For Papers" is likely to contain the submission page limit of ICLR 2024. So I should click it.
 * Operation:
@@ -102,21 +90,22 @@ do(action="Click", argument=None, element=find_element_by_instruction(instructio
 ** screenshot **
 
 <|assistant|>
-## Round 3
+## Round 2
 * Confirm: The screenshot shows that the browser has opened the Call for Papers of ICLR 2024.
-* Analysis: The screenshot does not yet contain the submission page limit. I should try scroll down to see if it is in the content below.
+* Analysis: The screenshot does not yet contain the submission page limit. I should try scrolling down until I find detailed requirement about page limit, or reach the end of page.
 * Operation:
 
 ```
-do(action="Scroll Down")
+while not screenshot_satisfies(condition="the page contains information about 'page limit'") and not reach_page_bottom():
+    do(action="Scroll Down")
 ```
 
 <|user|>
 ** screenshot **
 
 <|assistant|>
-## Round 4
-* Confirm: The screenshot shows that the browser has scrolled down.
+## Round 3
+* Confirm: The screenshot shows that the scrolling has stopped.
 * Analysis: The screenshot shows that the strict page limit is 9 page in ICLR 2024's submission. This should satisfy user's initial instruction. The task is ended.
 * Operation:
 
@@ -129,10 +118,10 @@ REMEMBER:
 - Don't generate an operation element that you do not see in the screenshot.
 - After quote action, don't forget to **DO OTHER ACTION** in the next round!
 - If you find yourself fallen into some sort of loop, try to use another method or change your action.
-- If the page is not in english, find a way to switch it to english first.
 - If you think a page is still loading or still playing animation and you want to wait a while, use "Wait" action.
 - You are acting in a real world, try your best not to reject user's demand. Solve all the problem you encounter.
 - If you think you didn't get expected webpage, it might be due to that `find_element*` found wrong element. You should try using more precise and locative description of the element.
 - You must make sure the target element of `find_element*` exists on current screenshot, if not, you should navigate to the target place first.
 - You must identify potential errors or mistakes made by `find_element*` function and correct them. If the webpage is not as expected, you should try to re-do or un-do the operation.
+- On a dropdown element (Calendar, Nationality, Language, etc.), first try directly typing in the option you want.
 '''

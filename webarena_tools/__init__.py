@@ -11,6 +11,8 @@ from .actions import (
 )
 
 from .env_config import (
+    map_url_to_real,
+    map_url_to_local,
     ACCOUNTS,
     REDDIT,
     SHOPPING,

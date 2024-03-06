@@ -2,24 +2,18 @@ import time
 import os
 import json
 
-TRACE_DIR = os.environ.get('TRACE_DIR')
-SCREENSHOT_DIR = os.environ.get('SCREENSHOT_DIR')
-if TRACE_DIR is None:
-    TRACE_DIR = '../traces'
-if SCREENSHOT_DIR is None:
-    SCREENSHOT_DIR = '../temp'
-os.makedirs(TRACE_DIR, exist_ok=True)
-os.makedirs(SCREENSHOT_DIR, exist_ok=True)
-
+from ..webarena_tools import (
+    map_url_to_real,
+)
 
 class JSONRecorder:
-    def __init__(self, instruction, page_executor, options={}):
+    def __init__(self, instruction, page_executor, trace_dir="../traces", options={}):
         self.id = int(options.get("task_id", time.time()))
         self.instruction = instruction
         self.page_executor = page_executor
 
         self.turn_number = 0
-        self.file_path = f'{TRACE_DIR}/{self.id}.jsonl'
+        self.file_path = os.path.join(trace_dir, f'{self.id}.jsonl')
         self.contents = []
         
         if "reset" in options:
@@ -28,10 +22,14 @@ class JSONRecorder:
 
     def update_response(self, page, response, prompt="** screenshot **"):
         step = {
-            "trace_id": self.id, "index": self.turn_number,
+            "trace_id": self.id,
+            "index": self.turn_number,
             "prompt": prompt if self.turn_number > 0 else f"{self.instruction}",
-            "image": self.page_executor.current_screenshot, "response": response, "url": page.url,
-            "window": page.viewport_size, "target": self.instruction
+            "image": self.page_executor.current_screenshot,
+            "response": response,
+            "url": map_url_to_real(page.url),
+            "window": page.viewport_size,
+            "target": self.instruction
         }
         self.contents.append(step)
 

@@ -10,13 +10,15 @@ import subprocess
 import tempfile
 import time
 import re
+import copy
 import getpass
+import signal
 
 from dotenv import load_dotenv
 from pathlib import Path
 from PIL import Image
 from tqdm import tqdm
-
+from typing import List
 from ..page_executor import WebarenaPageExecutor
 from ..recorder import JSONRecorder
 from ..gpt4v import OpenaiEngine
@@ -32,6 +34,7 @@ from ..webarena_tools.auto_login import (
 from ..webarena_tools.actions import (
     is_equivalent,
     create_none_action,
+    create_stop_action,
     Action,
     ActionTypes,
 )
@@ -66,6 +69,14 @@ openai_engine = OpenaiEngine()
 config_path = os.path.join(os.path.dirname(__file__), '.env')
 load_dotenv(config_path)
 
+# Timeout handler
+class TimeoutException(Exception):
+    pass
+
+def timeout_handler(signum, frame):
+    raise TimeoutException
+
+signal.signal(signal.SIGALRM, timeout_handler)
 
 def get_code_snippet(content):
     code = re.search(r'```.*?\n([\s\S]+?)\n```', content)
@@ -82,7 +93,7 @@ def early_stop(actions: list, threshold: int=5) -> tuple[bool, str]:
     if len(last_k_actions) == 0:
         return False, ""
 
-    last_action: Action = action_seq[-1]
+    last_action: Action = actions[-1]
 
     if len(last_k_actions) >= k:
         if all([
@@ -93,6 +104,19 @@ def early_stop(actions: list, threshold: int=5) -> tuple[bool, str]:
 
     return False, ""
 
+def update_action_history(path: str, task_id: int, raw_actions: List[Action], score: float=0):
+    actions = copy.deepcopy(raw_actions)
+    for action in actions:
+        action["coords"] = action["coords"].tolist()
+        action["action_type"] = action["action_type"].__str__()
+    
+    obj = {
+        "task_id": task_id,
+        "score": score,
+        "actions": actions
+    }
+    json.dump(obj, open(path, "w"), indent=4)
+    
 def run(
     playwright: Playwright,
     instruction: str=None,
@@ -105,7 +129,7 @@ def run(
         context=context,
         page=page,
         engine=openai_engine,
-        screenshot_dir=os.getenv('SCREENSHOT_DIR'),
+        screenshot_dir=os.path.join(options["result_dir"], "screenshots"),
         options=options,
     )
     page_executor.__update_screenshot__()
@@ -113,23 +137,37 @@ def run(
         instruction=instruction,
         page_executor=page_executor,
         options=options,
+        trace_dir=os.path.join(options["result_dir"], "traces"),
     )
+    
     print('[Setup Time]', time.time() - stt)
     
     actions = []
-    
-    while record.turn_number <= options.get("max_steps", 30):
+    task_id = options.get("task_id", -1)
+    out_path = os.path.join(options["result_dir"], "actions", f"{task_id}.json")
+                
+    timeout_count = 0
+    while record.turn_number + timeout_count * 0.5 <= options.get("max_steps", 30):
+        update_action_history(out_path, task_id, raw_actions=actions)
         try:
             stt = time.time()
             prompt = page_executor.__get_current_status__() if record.turn_number > 0 else instruction
             print('model generating...')
-            content = openai_engine.generate(
-                prompt=prompt,
-                image_path=page_executor.current_screenshot,
-                turn_number=record.turn_number,
-                ouput__0=record.format_history(),
-                sys_prompt=options.get("sites", "basic")[0]
-            )
+            
+            signal.alarm(45)
+            try:
+                content = openai_engine.webarena_generate(
+                    prompt=prompt,
+                    image_path=page_executor.current_screenshot,
+                    turn_number=record.turn_number,
+                    ouput__0=record.format_history(),
+                    sys_prompt=options.get("sites", "basic")[0],
+                )
+            except TimeoutException:
+                timeout_count += 1
+                print('[Prediction Timeout]', time.time() - stt)
+                time.sleep(5)
+                continue
             
             # content = '```\n'+ input(prompt+'\n') + '\n```'
             record.update_response(page, content)
@@ -147,12 +185,13 @@ def run(
             if exe_res['operation'] == 'exit':
                 break
             
-            if early_stop(actions):
-                actions.append(create_none_action())
+            esignal, reason = early_stop(actions)
+            if esignal:
+                actions.append(create_stop_action(reason))
                 break
         except:
             pass
-
+        
         record.turn_number += 1
         
     evaluator = evaluator_router(config_file)
@@ -167,19 +206,8 @@ def run(
         logger.info(f"[Result] (PASS) {config_file}")
     else:
         logger.info(f"[Result] (FAIL) {config_file}")
-    
-    task_id = options.get("task_id", -1)
-    
-    out_path = os.path.join(options.get("result_dir", "."), "traces", f"{task_id}.json")
-    for action in actions:
-        action["coords"] = action["coords"].tolist()
-    
-    obj = {
-        "task_id": options.get("task_id", -1),
-        "score": score,
-        "actions": actions
-    }
-    json.dump(obj, open(out_path, "w"))
+        
+    update_action_history(out_path, task_id, raw_actions=actions, score=score)
         
     return score
 
@@ -226,6 +254,7 @@ def test(args: argparse.Namespace, config_file_list: list[str]) -> None:
             "task_id": task_id,
             "sites": sites,
             "result_dir": args.result_dir,
+            "reset": True,
         }
         
         try:
@@ -274,7 +303,9 @@ def prepare(args: argparse.Namespace) -> None:
     
     # os.makedirs("temp", exist_ok=True)
     # os.makedirs("dev", exist_ok=True)
+    os.makedirs(os.path.join(result_dir, "actions"), exist_ok=True)
     os.makedirs(os.path.join(result_dir, "traces"), exist_ok=True)
+    os.makedirs(os.path.join(result_dir, "screenshots"), exist_ok=True)
     
     logger.info(f"Result dir: {result_dir}")
     
@@ -283,7 +314,7 @@ def prepare(args: argparse.Namespace) -> None:
         f.write(f"{LOG_FILE_NAME}\n")
 
 def get_unfinished(config_files: list[str], result_dir: str) -> list[str]:
-    result_files = glob.glob(os.path.join(result_dir, "traces/*.json"))
+    result_files = glob.glob(os.path.join(result_dir, "actions/*.json"))
     task_ids = [
         os.path.basename(f).split(".")[0] for f in result_files
     ]

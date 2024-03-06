@@ -57,28 +57,17 @@ def exit(message):
 
 # A toy example
 <|user|>
-Tell me the submission page limit of ICLR 2024.
-
-<|assistant|>
-## Round 0
-* Analysis: The user wants to know the color configuration of a picture frame they bought in September 2022 and has provided a website. I should open the website and look for the product or order history to find the information.
-* Plan:
-1. Open the provided website.
-2. Look for the product or order history.
-3. Find the color configuration of the picture frame.
-* Operation:
-
-```
-open_url(url="http://localhost:7770/")
-```
-
-<|user|>
+Tell me the color configuration of a picture frame they bought in September 2022.
 ** screenshot **
 
 <|assistant|>
-## Round 1
+## Round 0
 * Confirm: The screenshot shows that the website "One Stop Market" is open.
-* Analysis: To find the color configuration of the picture frame bought in September 2022, I should access the user's account where the order history might be located.
+* Analysis: The user wants to know the color configuration of a picture frame they bought in September 2022. I look for the order history to find the information. To find the color configuration of the picture frame bought in September 2022, I should access the user's account where the order history might be located.
+* Plan:
+1. Access the user's account.
+2. Look for the order history.
+3. Find the color configuration of the picture frame.
 * Operation:
 
 ```
@@ -89,7 +78,7 @@ do(action="Click", element=find_element_by_instruction(instruction="the 'My Acco
 ** screenshot **
 
 <|assistant|>
-## Round 2
+## Round 1
 * Confirm: The screenshot shows that the "My Account" page is open.
 * Analysis: I should now look for the order history to find the specific order from September 2022.
 * Operation:
@@ -102,7 +91,7 @@ do(action="Click", element=find_element_by_instruction(instruction="the 'My Orde
 ** screenshot **
 
 <|assistant|>
-## Round 3
+## Round 2
 * Confirm: The screenshot shows the "My Orders" page with a list of orders.
 * Analysis: I need to find the order from September 2022. Since the orders are not from the correct date, I should scroll down to find older orders.
 * Operation:
@@ -115,7 +104,7 @@ do(action="Scroll Down")
 ** screenshot **
 
 <|assistant|>
-## Round 4
+## Round 3
 * Confirm: The screenshot shows more orders, but they are still not from September 2022.
 * Analysis: I should navigate to the page that potentially contains the order from September 2022 by clicking the pagination control.
 * Operation:
@@ -128,7 +117,7 @@ do(action="Click", element=find_element_by_instruction(instruction="the paginati
 ** screenshot **
 
 <|assistant|>
-## Round 5
+## Round 4
 * Confirm: The screenshot shows that the page has changed, but the orders are still not from September 2022.
 * Analysis: I should sroll down to find the order from September 2022.
 * Operation:
@@ -141,7 +130,7 @@ do(action="Scroll Down")
 ** screenshot **
 
 <|assistant|>
-## Round 6
+## Round 5
 * Confirm: The screenshot shows that there are two orders which dated 9/29/22 and 9/1/22.
 * Analysis: I should click the "View Order" link for the order dated 9/29/22 first.
 * Operation:
@@ -154,7 +143,7 @@ do(action="Click", element=find_element_by_instruction(instruction="the "View Or
 ** screenshot **
 
 <|assistant|>
-## Round 7
+## Round 6
 * Confirm: The screenshot shows that the order is a picture frame, and it's green.
 * Analysis: The task is fulfilled. I should exit and provide the answer to the user.
 * Operation:
@@ -178,5 +167,5 @@ REMEMBER:
 - You must strictly follow the details of the tasks, such as date, location, and the specific content of the webpage.
 - You must make sure what the date the task asked.
 - Make sure that the description of the element's orientation refers to the position of the entire screen shot.
-- You must carfully view the screenshot to ensure that the element you want to act for must in the current screenshot, or you shouldn't do acitions on the in nonexistent element.
+- You must ensure that the element you act for must in the current screenshot, or you shouldn't do acitions on the in nonexistent element.
 '''

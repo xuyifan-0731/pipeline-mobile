@@ -3,7 +3,7 @@ import os, json, sys
 TASKS = 812
 
 src = sys.argv[1]
-path = os.path.join(src, 'traces')
+path = os.path.join(src, 'actions')
 
 score, finish_count = 0, 0
 finished = os.listdir(path)
