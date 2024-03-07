@@ -22,6 +22,8 @@ class SyncVisualPageExecutor:
         self.current_screenshot = None
         self.current_return = None
 
+        self.last_turn_element = None
+
         self.device_pixel_ratio = self.page.evaluate("window.devicePixelRatio")
 
     def __get_current_status__(self):
@@ -79,6 +81,13 @@ class SyncVisualPageExecutor:
         self.page.screenshot(path=self.current_screenshot)
         print("Screenshot saved.")
 
+    def __get_element_by_coordinates(self, coordinates):
+        x, y = coordinates
+        return self.page.evaluate(f"""() => {{
+            const el = document.elementFromPoint({x}, {y});
+            return el ? el.outerHTML : null;  // Returns the outer HTML of the element, or null if no element is found
+        }}""")
+
     def reach_page_bottom(self):
         scroll_position = self.page.evaluate("window.pageYOffset")  # Current scroll position from the top
         total_height = self.page.evaluate("document.body.scrollHeight")  # Total scrollable height
@@ -111,6 +120,8 @@ class SyncVisualPageExecutor:
             self.scroll_up()
         elif action == 'Press Key':
             self.press_key(argument)
+        elif action == 'Select Option':
+            self.select_option(argument)
         elif action == 'Wait':
             self.wait()
         else:
@@ -119,6 +130,9 @@ class SyncVisualPageExecutor:
 
     def find_element_by_instruction(self, instruction):
         (center_x, center_y), bbox = get_relative_bbox_center(self.page, instruction, self.current_screenshot)
+        self.last_turn_element = self.__get_element_by_coordinates(
+            (center_x / self.device_pixel_ratio, center_y / self.device_pixel_ratio)
+        ) # save the element
         return instruction, (center_x, center_y), bbox
 
     def screenshot_satisfies(self, condition):
@@ -188,3 +202,5 @@ class SyncVisualPageExecutor:
     def wait(self):
         self.page.wait_for_timeout(5000)
         self.current_return = {"operation": "do", "action": 'Wait'}
+
+    def select_option(self, argument):
