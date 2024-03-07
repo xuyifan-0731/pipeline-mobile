@@ -204,3 +204,5 @@ class SyncVisualPageExecutor:
         self.current_return = {"operation": "do", "action": 'Wait'}
 
     def select_option(self, argument):
+        assert self.last_turn_element is not None and self.last_turn_element.tagName.lower() == 'select'
+        i = 1
