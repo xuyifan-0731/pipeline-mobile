@@ -20,10 +20,10 @@ def do(action, argument, element):
 	"""A single browsing operation on the webpage.
 
 	Args:
-		:param action: one of the actions from ["Click", "Right Click", "Type", "Search", "Hover", "Scroll Up", "Scroll Down", "Press Key", "Switch Tab", "Wait"].
-		:param argument: optional. Only for "Type", "Search", "Switch Page" and "Press Key" action, indicating the content to type in, page number(start from 0) to switch, or key to press.
+		:param action: one of the actions from ["Click", "Right Click", "Type", "Search", "Hover", "Scroll Up", "Scroll Down", "Press Enter", "Switch Tab", "Select Dropdown Option", "Wait"].
+		:param argument: optional. Only for "Type", "Search", "Switch Page", and "Select Dropdown Option", indicating the content to type in, page number(start from 0) to switch, or key to press.
 		                           "Search" action is equivalent to "Type" action plus "Enter" key press.
-		:param element: optional. Only for "Click", "Right Click", "Type", and "Hover". Should be acquired from find_element* functions.
+		:param element: optional. Only for "Click", "Right Click", "Type", "Select Dropdown Option", and "Hover". Should be acquired from find_element* functions.
 
 	Returns:
 		None. The webpage will be updated after executing the action.

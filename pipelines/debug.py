@@ -22,6 +22,7 @@ if SCREENSHOT_DIR is None:
 os.makedirs(TRACE_DIR, exist_ok=True)
 os.makedirs(SCREENSHOT_DIR, exist_ok=True)
 
+
 def get_code_snippet(content):
     code = re.search(r'```.*?\n([\s\S]+?)\n```', content)
     if code is None:
@@ -54,8 +55,14 @@ def run(playwright: Playwright, instruction=None) -> None:
 
     while record.turn_number <= 100:
         prompt = page_executor.__get_current_status__() if record.turn_number > 0 else instruction
-        content = openai_engine.generate(prompt=prompt, image_path=page_executor.current_screenshot,
-                                         turn_number=record.turn_number, ouput__0=record.format_history())
+        # content = openai_engine.generate(prompt=prompt, image_path=page_executor.current_screenshot,
+        #                                  turn_number=record.turn_number, ouput__0=record.format_history())
+        example_contents = [
+            '```\nopen_url(url="http://localhost:7770/sports-outdoors/hunting-fishing.html")\n```',
+            '```\ndo(action="Click", element=find_element_by_instruction(instruction="the \'Sort By\' dropdown at the top right"))\n```',
+            '```\ndo(action="Select Dropdown Option", argument="Price", element=find_element_by_instruction(instruction="the \'Sort By\' dropdown option \'Price\' at the top right"))\n```'
+        ]
+        content = example_contents[record.turn_number]
         record.update_response(page, content)
         print(content)
 
@@ -76,5 +83,5 @@ def main(instruction=None):
 
 if __name__ == '__main__':
     # main()
-    main('Browse and list 3 latest paper authored by Google tweeted by my friend Aran Komatsuzaki on twitter, and help me \'like\' them. Start from twitter and find his profile.')
-    # main("Sort products by price. Start on http://localhost:7770/sports-outdoors/hunting-fishing.html")
+    # main('Browse and list 3 latest paper authored by Google tweeted by my friend Aran Komatsuzaki on twitter, and help me \'like\' them. Start from twitter and find his profile.')
+    main("Sort products by price. Start on http://localhost:7770/sports-outdoors/hunting-fishing.html")
