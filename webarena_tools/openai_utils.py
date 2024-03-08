@@ -2,6 +2,10 @@ import os
 import openai
 import openai.error
 
+# For logs
+import logging
+logger = logging.getLogger("logger")
+
 def generate_from_openai_chat_completion(
     messages: list[dict[str, str]],
     model: str,
@@ -28,6 +32,8 @@ def generate_from_openai_chat_completion(
         stop=[stop_token] if stop_token else None,
     )
     answer: str = response["choices"][0]["message"]["content"]
-    print(messages)
-    print(answer)
+
+    logger.info(f"[Q] {messages}")
+    logger.info(f"[A] {answer}")
+    
     return answer

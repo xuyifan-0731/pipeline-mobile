@@ -58,6 +58,7 @@ def exit(message):
 # Example
 <|user|>
 Tell me the count of comments that have received more downvotes than upvotes for the user who made the latest post on the tifu forum.
+** screenshot **
 
 <|assistant|>
 ## Round 0
@@ -205,6 +206,5 @@ exit(message="The user ferventlotus has 0 comments with more downvotes than upvo
 - If you are asking to submit a post, please read the text carefully and decide which subreddit is most suitable. If you don't know what subreddit exist, please go to fourms and use Alphabetical to see all the forums. Don't use the search bar!
 - After you've filled out all the form information, you should scroll down the page before you click the submit or post button.
 - It's ok to post a same post in a subreddit.
-
-# REAL ACTION
+- You should **NEVER** try to use the browser's address bar at the top of the page to navigate.
 '''

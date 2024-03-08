@@ -168,4 +168,5 @@ REMEMBER:
 - You must make sure what the date the task asked.
 - Make sure that the description of the element's orientation refers to the position of the entire screen shot.
 - You must ensure that the element you act for must in the current screenshot, or you shouldn't do acitions on the in nonexistent element.
+- You should **NEVER** try to use the browser's address bar at the top of the page to navigate.
 '''

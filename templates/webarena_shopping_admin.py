@@ -55,80 +55,10 @@ def exit(message):
 	"""
 ```
 
-
 # example 1
 <|user|>
-open 'https://google.com' and tell me the submission page limit of ICLR 2024.
-
-<|assistant|>
-## Round 0
-* Analysis: The user wants to open https://google.com and find the submission page limit of ICLR 2024. This is an information seeking task, and I should first try search on Google.
-* Plan:
-1. Use 'https://google.com' to search "ICLR 2024 submission page limit".
-2. Browse and click search results.
-3. See if the submission page limit is in the content.
-* Operation:
-
-```
-open_url(url="https://google.com")
-```
-
-<|user|>
+open 'http://luma.com/admin/reports/report_sales/sales/' and Set the 'Period' filter to 'Month'
 ** screenshot **
-
-<|assistant|>
-## Round 1
-* Confirm: The screenshot shows that the browser has opened Google.
-* Analysis: I should type "ICLR 2024 submission page limit" to search.
-* Operation:
-
-```
-do(action="Search", argument="ICLR 2024 submission page limit", element=find_element_by_instruction(instruction="the Google search bar in the center"))
-```
-
-<|user|>
-** screenshot **
-
-<|assistant|>
-## Round 2
-* Confirm: The screenshot shows that Google returns many related results, indicating that the search is successful.
-* Analysis: I think the result "2024 - Call For Papers" is likely to contain the nsubmission page limit of ICLR 2024. So I should click it.
-* Operation:
-
-```
-do(action="Click", argument=None, element=find_element_by_instruction(instruction="the link '2024 - Call For Papers' from ICLR at top left"))
-```
-
-<|user|>
-** screenshot **
-
-<|assistant|>
-## Round 3
-* Confirm: The screenshot shows that the browser has opened the Call for Papers of ICLR 2024.
-* Analysis: The screenshot does not yet contain the submission page limit. I should try scroll down to see if it is in the content below.
-* Operation:
-
-```
-do(action="Scroll Down")
-```
-
-<|user|>
-** screenshot **
-
-<|assistant|>
-## Round 4
-* Confirm: The screenshot shows that the browser has scrolled down.
-* Analysis: The screenshot shows that the strict page limit is 9 page in ICLR 2024's submission. This should satisfy user's initial instruction. The task is ended.
-* Operation:
-
-```
-exit(message="According to the Call for Papers, the strict page limit is 9 in ICLR 2024.")
-```
-
-
-# example 2
-<|user|>
-open 'http://localhost:7780/admin/reports/report_sales/sales/' and Set the 'Period' filter to 'Month'
 
 <|assistant|>
 ## Round 0
@@ -140,7 +70,7 @@ open 'http://localhost:7780/admin/reports/report_sales/sales/' and Set the 'Peri
 * Operation:
 
 ```
-open_url(url="http://localhost:7780/admin/reports/report_sales/sales/")
+open_url(url="http://luma.com/admin/reports/report_sales/sales/")
 ```
 
 <|user|>
@@ -170,9 +100,10 @@ exit(message="The 'Period' filter is set to 'Month'.")
 ```
 
 
-# example 3
+# example 2
 <|user|>
-open 'http://localhost:7780/admin/sales/order/' and show all pending orders
+open 'http://luma.com/admin/sales/order/' and show all pending orders
+** screenshot **
 
 <|assistant|>
 ## Round 0
@@ -184,7 +115,7 @@ open 'http://localhost:7780/admin/sales/order/' and show all pending orders
 * Operation:
 
 ```
-open_url(url="http://localhost:7780/admin/sales/order/")
+open_url(url="http://luma.com/admin/sales/order/")
 ```
 
 <|user|>
@@ -240,9 +171,10 @@ exit(message="All pending orders are displayed.")
 ```
 
 
-# example 4
+# example 3
 <|user|>
-open 'http://localhost:7780/admin/sales/order/' and Sort the orders in descending order through 'Purchase Date'
+open 'http://luma.com/admin/sales/order/' and Sort the orders in descending order through 'Purchase Date'
+** screenshot **
 
 <|assistant|>
 ## Round 0
@@ -254,7 +186,7 @@ open 'http://localhost:7780/admin/sales/order/' and Sort the orders in descendin
 * Operation:
 
 ```
-open_url(url="http://localhost:7780/admin/sales/order/")
+open_url(url="http://luma.com/admin/sales/order/")
 ```
 
 <|user|>
@@ -296,9 +228,10 @@ do(action="Click", element=find_element_by_instruction(instruction="the 'Purchas
 exit(message="The orders are sorted by 'Purchase Date' in descending order.")
 ```
 
-# example 5
+# example 4
 <|user|>
-open 'http://localhost:7780/admin/sales/order/' and Get the total payment amount of the last 4 orders.
+open 'http://luma.com/admin/sales/order/' and Get the total payment amount of the last 4 orders.
+** screenshot **
 
 <|assistant|>
 ## Round 0
@@ -310,7 +243,7 @@ open 'http://localhost:7780/admin/sales/order/' and Get the total payment amount
 * Operation:
 
 ```
-open_url(url="http://localhost:7780/admin/sales/order/")
+open_url(url="http://luma.com/admin/sales/order/")
 ```
 
 <|user|>
@@ -366,9 +299,10 @@ exit(message="The total payment amount of the last 4 orders is $804.00.")
 ```
 
 
-# example 6
+# example 5
 <|user|>
-open 'http://localhost:7780/admin/review/product/index/' and Show reviews that mention term 'disappointed'.
+open 'http://luma.com/admin/review/product/index/' and Show reviews that mention term 'disappointed'.
+** screenshot **
 
 <|assistant|>
 ## Round 0
@@ -380,7 +314,7 @@ open 'http://localhost:7780/admin/review/product/index/' and Show reviews that m
 * Operation:
 
 ```
-open_url(url="http://localhost:7780/admin/review/product/index/")
+open_url(url="http://luma.com/admin/review/product/index/")
 ```
 
 <|user|>
@@ -423,9 +357,10 @@ exit(message="Reviews mentioning 'disappointed' are displayed.")
 ```
 
 
-# example 7
+# example 6
 <|user|>
-open 'http://localhost:7780/admin/reports/report_sales/sales/' and Show order reports from 07/05/2021 to 05/31/2023.
+open 'http://luma.com/admin/reports/report_sales/sales/' and Show order reports from 07/05/2021 to 05/31/2023.
+** screenshot **
 
 <|assistant|>
 ## Round 0
@@ -437,7 +372,7 @@ open 'http://localhost:7780/admin/reports/report_sales/sales/' and Show order re
 * Operation:
 
 ```
-open_url(url="http://localhost:7780/admin/reports/report_sales/sales/")
+open_url(url="http://luma.com/admin/reports/report_sales/sales/")
 ```
 
 <|user|>
@@ -506,9 +441,10 @@ exit(message="Order reports from 07/05/2021 to 05/31/2023 are displayed.")
 ```
 
 
-# example 8
+# example 7
 <|user|>
-open 'http://localhost:7780/admin/catalog/product/index/' and Enable all products.
+open 'http://luma.com/admin/catalog/product/index/' and Enable all products.
+** screenshot **
 
 <|assistant|>
 ## Round 0
@@ -520,7 +456,7 @@ open 'http://localhost:7780/admin/catalog/product/index/' and Enable all product
 * Operation:
 
 ```
-open_url(url="http://localhost:7780/admin/catalog/product/index/")
+open_url(url="http://luma.com/admin/catalog/product/index/")
 ```
 
 <|user|>
@@ -601,6 +537,7 @@ REMEMBER:
 - You must make sure the target element of `find_element*` exists on current screenshot, if not, you should navigate to the target place first.
 - You must identify potential errors or mistakes made by `find_element*` function and correct them. If the webpage is not as expected, you should try to re-do or un-do the operation.
 - If the target content cannot be found in the current screenshot, scroll down to confirm that the current webpage exactly does not have the target content.
+- You should **NEVER** try to use the browser's address bar at the top of the page to navigate.
 
 Notice:
 - Prohibit always clicking on the 'Go to Advanced Reporting' or 'Reload Data' link on dashboard of the website.

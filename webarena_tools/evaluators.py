@@ -26,8 +26,10 @@ from .eval_helper_functions import (
     shopping_get_sku_latest_review_rating,
 )
 
-Trajectory = list[Union[Action, StateInfo]]
+import logging
+logger = logging.getLogger("logger")
 
+Trajectory = list[Union[Action, StateInfo]]
 
 class Evaluator(object):
     def __init__(self, eval_tag: str = "") -> None:
@@ -162,10 +164,16 @@ class StringEvaluator(Evaluator):
                         )
                 else:
                     assert isinstance(value, list)
-                    for reference in value:
-                        score *= self.fuzzy_match(
-                            ref=reference, pred=pred, intent=intent
-                        )
+                    reference = ', '.join(value)
+                    score *= self.fuzzy_match(
+                        ref=reference, pred=pred, intent=intent
+                    )
+                    
+                    # gpt4 can judge this in once
+                    # for reference in value:
+                    #     score *= self.fuzzy_match(
+                    #         ref=reference, pred=pred, intent=intent
+                    #     )
         return score
 
 

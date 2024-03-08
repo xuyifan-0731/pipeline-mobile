@@ -77,6 +77,7 @@ def exit(message):
 # A toy example
 <|user|>
 Compare the time for walking and driving route from 5000 Fifth Avenue, Pittsburgh to UPMC family health center
+** screenshot **
 
 <|assistant|>
 ## Round 0
@@ -210,6 +211,7 @@ REMEMBER:
 - If you think you didn't get expected webpage, it might be due to that `find_element*` found wrong element. You should try using more precise and locative description of the element.
 - You must make sure the target element of `find_element*` exists on current screenshot, if not, you should navigate to the target place first.
 - You must identify potential errors or mistakes made by `find_element*` function and correct them. If the webpage is not as expected, you should try to re-do or un-do the operation.
+- You should **NEVER** try to use the browser's address bar at the top of the page to navigate.
 - On a dropdown element (Calendar, Nationality, Language, Transportation, etc.), first try directly using Search action to select the option you want.
 - Direction sign: When you want to search the distance from one place to another place, you should click the direction sign to achieve it, instead of searh bar. 
 '''

@@ -85,10 +85,10 @@ GPT4V_TOKEN="<your-openapi-key>"
 TRACE_DIR="./traces"
 SCREENSHOT_DIR="./screenshots"
 
-SHOPPING="http://localhost:7770"
-SHOPPING_ADMIN="http://localhost:7780/admin"
-REDDIT="http://localhost:9999"
-GITLAB="http://localhost:8023"
+SHOPPING="http://localhost:7773"
+SHOPPING_ADMIN="http://localhost:7783/admin"
+REDDIT="http://localhost:9993"
+GITLAB="http://localhost:8026"
 MAP="http://ec2-3-131-244-37.us-east-2.compute.amazonaws.com:3000/"
 WIKIPEDIA="http://localhost:8888/wikipedia_en_all_maxi_2022-05/A/User:The_other_Kiwix_guy/Landing"
 HOMEPAGE="http://localhost:4399"
@@ -117,12 +117,18 @@ import nltk
 nltk.download('punkt')
 ```
 
-然后运行 `bash webarena_test.sh` 生成测试数据和网页认证信息；
+然后执行如下指令生成测试数据和网页认证信息；
+
+```bash
+cd ..
+python -m Pipeline.webarena_tools.generate_test_data
+mkdir -p ./.auth
+python -m Pipeline.webarena_tools.auto_login
+```
 
 最后执行下面的指令即可开始评测：
 
 ```bash
-cd ..
 python -m Pipeline.pipelines.webarena_test --result_dir result
 # eval
 python Pipeline/webarena_tools/score.py result
