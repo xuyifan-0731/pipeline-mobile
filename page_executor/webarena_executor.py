@@ -50,16 +50,25 @@ class WebarenaPageExecutor:
         self.current_return = None
         self.action_return = create_none_action()
         self.mac_platform = False if "Mac" not in self.page.evaluate("navigator.platform") else True
+        
+        self.last_turn_element = None
+        self.last_turn_element_tagname = None
+
+        self.device_pixel_ratio = self.page.evaluate("window.devicePixelRatio")
 
     def __get_current_status__(self):
+        page_position = self.page.evaluate("window.pageYOffset") + self.page.evaluate("window.innerHeight")
+        scroll_height = self.page.evaluate("() => document.documentElement.scrollHeight")
+        page_position_percentage = page_position / scroll_height
         status = {
             "Current URL": map_url_to_real(self.page.url),
-            "document.body.scrollHeight": self.page.evaluate("document.body.scrollHeight"),
-            "window.pageYOffset": self.page.evaluate("window.pageYOffset"),
-            "window.innerHeight": self.page.evaluate("window.innerHeight")
+            "document.body.scrollHeight": scroll_height,
+            "page position": f'{page_position} ({page_position_percentage:02f} of total page)'
         }
+        if self.last_turn_element_tagname == 'SELECT':
+            status["Opened Dropdown"] = [o['text'] for o in self.__get_select_element_options__(self.last_turn_element)]
         return json.dumps(status, ensure_ascii=False)
-
+    
     def __capture_new_page__(self, event):
         self.new_page_captured = True
         event.wait_for_load_state(timeout=30000)
@@ -85,6 +94,10 @@ class WebarenaPageExecutor:
             action["text"] = error_msg
             self.action_return = action
         
+        if self.current_return['operation'] != 'do' 
+            or self.current_return['action'] not in {'Click', 'Right Click', 'Select Dropdown Option'}:
+            self.last_turn_element, self.last_turn_element_tagname = None, None
+            self.action_return = create_none_action()
             
         return self.current_return
 
@@ -119,6 +132,14 @@ class WebarenaPageExecutor:
         self.current_screenshot = current_screenshot
         print(f"Screenshot saved at {self.current_screenshot}.")
 
+    def __get_element_by_coordinates__(self, coordinates):
+        x, y = coordinates
+        return self.page.evaluate_handle(f"""() => document.elementFromPoint({x}, {y})""")
+
+    def __get_select_element_options__(self, element):
+        return [{"value": option.get_attribute('value'), "text": option.text_content().strip(' \n')} for option in
+                element.query_selector_all("option")]
+        
     def reach_page_bottom(self):
         scroll_position = self.page.evaluate("window.pageYOffset")  # Current scroll position from the top
         total_height = self.page.evaluate("document.body.scrollHeight")  # Total scrollable height
@@ -144,8 +165,10 @@ class WebarenaPageExecutor:
             self.scroll_down()
         elif action == 'Scroll Up':
             self.scroll_up()
-        elif action == 'Press Key':
-            self.press_key(argument)
+        elif action == 'Press Enter':
+            self.press_enter(argument)
+        elif action == 'Select Dropdown Option':
+            self.select_option_from_dropdown(argument, element)
         elif action == 'Wait':
             self.wait()
         else:
@@ -154,6 +177,10 @@ class WebarenaPageExecutor:
 
     def find_element_by_instruction(self, instruction):
         (center_x, center_y), bbox = get_relative_bbox_center(self.page, instruction, self.current_screenshot)
+        elf.last_turn_element = self.__get_element_by_coordinates__(
+            (center_x / self.device_pixel_ratio, center_y / self.device_pixel_ratio)
+        )  # save the element
+        self.last_turn_element_tagname = self.last_turn_element.evaluate("element => element.tagName")
         return instruction, (center_x, center_y), bbox
 
     def screenshot_satisfies(self, condition):
@@ -179,21 +206,21 @@ class WebarenaPageExecutor:
     # Implement sub-actions of do
     def click(self, element):
         instruction, (center_x, center_y), bbox = element
-        self.page.mouse.click(center_x, center_y)
+        self.page.mouse.click(center_x / self.device_pixel_ratio, center_y / self.device_pixel_ratio)
         self.action_return = create_click_action(center_x, center_y)
         self.current_return = {"operation": "do", "action": 'Click', "kwargs": {"instruction": instruction},
                                "bbox": bbox}
 
     def right_click(self, element):
         instruction, (center_x, center_y), bbox = element
-        self.page.mouse.click(center_x, center_y, button="right")
+        self.page.mouse.click(center_x / self.device_pixel_ratio, center_y / self.device_pixel_ratio, button="right")
         self.action_return = create_click_action(center_x, center_y, True)
         self.current_return = {"operation": "do", "action": 'Click', "kwargs": {"instruction": instruction},
                                "bbox": bbox}
 
     def type(self, argument, element):
         instruction, (center_x, center_y), bbox = element
-        self.page.mouse.click(center_x, center_y, button='left')
+        self.page.mouse.click(center_x / self.device_pixel_ratio, center_y / self.device_pixel_ratio, button='left')
         self.page.keyboard.press(self.match_key('Meta+A'))
         self.page.keyboard.press('Backspace')
         self.page.keyboard.type(self.match_key(argument))
@@ -216,7 +243,7 @@ class WebarenaPageExecutor:
 
     def hover(self, element):
         instruction, (center_x, center_y), bbox = element
-        self.page.mouse.move(center_x, center_y)
+        self.page.mouse.move(center_x / self.device_pixel_ratio, center_y / self.device_pixel_ratio)
         self.page.wait_for_timeout(500)
         self.action_return = create_hover_action(center_x, center_y)
         self.current_return = {"operation": "do", "action": 'Hover', "kwargs": {"instruction": instruction},
@@ -232,6 +259,11 @@ class WebarenaPageExecutor:
         self.action_return = create_scroll_action('down')
         self.current_return = {"operation": "do", "action": 'Scroll Down'}
 
+    def press_enter(self, argument):
+        self.page.keyboard.press("Enter")
+        self.action_return = create_key_press_action("Enter")
+        self.current_return = {"operation": "do", "action": 'Press Enter', "kwargs": {"argument": argument}}
+        
     def press_key(self, argument):
         self.page.keyboard.press(self.match_key(argument))
         self.action_return = create_key_press_action(argument)
@@ -241,7 +273,16 @@ class WebarenaPageExecutor:
         self.page.wait_for_timeout(5000)
         self.action_return = create_none_action()
         self.current_return = {"operation": "do", "action": 'Wait'}
-        
+    
+    def select_option_from_dropdown(self, argument, element):
+        if self.last_turn_element_tagname != 'SELECT':
+            self.click(element)
+        else:
+            selector_option_dict = dict(
+                (o["text"], o["value"]) for o in self.__get_select_element_options__(self.last_turn_element))
+            assert argument in selector_option_dict
+            self.last_turn_element.select_option(value=selector_option_dict[argument])
+    
     def match_key(self, key_comb: str):
         key = map_keys(key_comb)
         if "Meta" in key and not self.mac_platform:
