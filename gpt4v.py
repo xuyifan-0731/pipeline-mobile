@@ -37,11 +37,6 @@ def encode_image(image_path):
     with open(image_path, "rb") as image_file:
         return base64.b64encode(image_file.read()).decode('utf-8')
 
-def handle_giveup(details):
-    print("Backing off {wait:0.1f} seconds afters {tries} tries calling function {target} with args {args} and kwargs {kwargs}"
-          .format(**details))
-
-
 class Engine:
     def __init__(self) -> None:
         pass
@@ -163,9 +158,9 @@ class OpenaiEngine(Engine):
             return answer2
 
     @backoff.on_exception(
-        backoff.expo,
+        backoff.constant,
         (APIError, RateLimitError, APIConnectionError, ServiceUnavailableError, InvalidRequestError),
-        on_giveup=handle_giveup,
+        interval=1
     )
     def webarena_generate(self, prompt: str, max_new_tokens=4096, temperature=None, model=None, image_path=None,
                  ouput__0=None, turn_number=0, current_feedback=None, sys_prompt="", **kwargs):

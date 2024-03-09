@@ -147,27 +147,31 @@ def run(
     out_path = os.path.join(options["result_dir"], "actions", f"{task_id}.json")
                 
     timeout_count = 0
-    while record.turn_number + timeout_count * 0.5 <= options.get("max_steps", 30):
+    while record.turn_number + timeout_count * 0.03 <= options.get("max_steps", 30):
         update_action_history(out_path, task_id, raw_actions=actions)
-        try:
+        if True:
+        # try:
             stt = time.time()
             prompt = page_executor.__get_current_status__() if record.turn_number > 0 else instruction
             print('model generating...')
             
-            signal.alarm(45)
-            try:
-                content = openai_engine.webarena_generate(
-                    prompt=prompt,
-                    image_path=page_executor.current_screenshot,
-                    turn_number=record.turn_number,
-                    ouput__0=record.format_history(),
-                    sys_prompt=options.get("sites", "basic")[0],
-                )
-            except TimeoutException:
-                timeout_count += 1
-                print('[Prediction Timeout]', time.time() - stt)
-                time.sleep(5)
-                continue
+            # signal.alarm(45)
+            # try:
+            #     content = openai_engine.webarena_generate(
+            #         prompt=prompt,
+            #         image_path=page_executor.current_screenshot,
+            #         turn_number=record.turn_number,
+            #         ouput__0=record.format_history(),
+            #         sys_prompt=options.get("sites", "basic")[0],
+            #     )
+            # except TimeoutException:
+            #     timeout_count += 1
+            #     print('[Prediction Timeout]', time.time() - stt)
+            #     # time.sleep(5)
+            #     continue
+            
+            input('your move > ')
+            content = open("action.txt", "r").read()
             
             # content = '```\n'+ input(prompt+'\n') + '\n```'
             record.update_response(page, content)
@@ -189,8 +193,8 @@ def run(
             if esignal:
                 actions.append(create_stop_action(reason))
                 break
-        except:
-            pass
+        # except:
+        #     pass
         
         record.turn_number += 1
         
@@ -215,54 +219,59 @@ def run(
 def test(args: argparse.Namespace, config_file_list: list[str]) -> None:
     scores = []
     for config_file in tqdm(config_file_list):
-        with open(config_file) as f:
-            _c = json.load(f)
-            intent = _c["intent"]
-            task_id = _c["task_id"]
-            sites = _c["sites"]
-            # automatically login
-            if _c["storage_state"]:
-                cookie_file_name = os.path.basename(_c["storage_state"])
-                comb = get_site_comb_from_filepath(cookie_file_name)
-                temp_dir = tempfile.mkdtemp()
-                # subprocess to renew the cookie
-                subprocess.run([
-                    "python",
-                    "-m",
-                    f"Pipeline.webarena_tools.auto_login",
-                    "--auth_folder",
-                    temp_dir,
-                    "--site_list",
-                    *comb,
-                ])
-                _c["storage_state"] = f"{temp_dir}/{cookie_file_name}"
-                assert os.path.exists(_c["storage_state"])
-                # update the config file
-                config_file = f"{temp_dir}/{os.path.basename(config_file)}"
-                with open(config_file, "w") as f:
-                    json.dump(_c, f)
-        
-        options = {
-            "storage_state": _c["storage_state"],
-            "headless": False,
-            "slow_mo": args.slow_mo,
-            "viewport": {
-                "width": args.viewport_width,
-                "height": args.viewport_height
-            },
-            "max_steps": args.max_steps,
-            "task_id": task_id,
-            "sites": sites,
-            "result_dir": args.result_dir,
-            "reset": True,
-        }
-        
         try:
+            with open(config_file) as f:
+                _c = json.load(f)
+                intent = _c["intent"]
+                task_id = _c["task_id"]
+                sites = _c["sites"]
+                # automatically login
+                if _c["storage_state"]:
+                    cookie_file_name = os.path.basename(_c["storage_state"])
+                    comb = get_site_comb_from_filepath(cookie_file_name)
+                    temp_dir = tempfile.mkdtemp()
+                    # subprocess to renew the cookie
+                    subprocess.run([
+                        "python",
+                        "-m",
+                        f"Pipeline.webarena_tools.auto_login",
+                        "--auth_folder",
+                        temp_dir,
+                        "--site_list",
+                        *comb,
+                    ])
+                    _c["storage_state"] = f"{temp_dir}/{cookie_file_name}"
+                    assert os.path.exists(_c["storage_state"])
+                    # update the config file
+                    config_file = f"{temp_dir}/{os.path.basename(config_file)}"
+                    with open(config_file, "w") as f:
+                        json.dump(_c, f)
+            
+            options = {
+                "storage_state": _c["storage_state"],
+                "headless": False,
+                "slow_mo": args.slow_mo,
+                "viewport": {
+                    "width": args.viewport_width,
+                    "height": args.viewport_height
+                },
+                "max_steps": args.max_steps,
+                "task_id": task_id,
+                "sites": sites,
+                "result_dir": args.result_dir,
+                "reset": True,
+            }
+        except:
+            logger.info(f"Config Error: {config_file}")
+            continue
+        
+        if True:
+        # try:
             with sync_playwright() as playwright:
                 score = run(playwright, instruction=intent, config_file=config_file, options=options)
             scores.append(score)
-        except:
-            logger.info(f"Runtime Error: {config_file}")
+        # except:
+        #     logger.info(f"Runtime Error: {config_file}")
 
     scores = [0.0] if len(scores) == 0 else scores
     logger.info(f"Average score: {sum(scores) / len(scores)}")
@@ -314,10 +323,18 @@ def prepare(args: argparse.Namespace) -> None:
         f.write(f"{LOG_FILE_NAME}\n")
 
 def get_unfinished(config_files: list[str], result_dir: str) -> list[str]:
+    task_ids = []
     result_files = glob.glob(os.path.join(result_dir, "actions/*.json"))
-    task_ids = [
-        os.path.basename(f).split(".")[0] for f in result_files
-    ]
+    for fn in result_files:
+        try:
+            with open(fn, "r") as f:
+                jd = json.load(f)
+        except:
+            jd = {}
+        
+        if len(jd.get('actions', [])) >= 0:
+            task_id = os.path.basename(fn).split(".")[0] 
+
     unfinished_configs = []
     for config_file in config_files:
         task_id = os.path.basename(config_file).split(".")[0]
@@ -351,7 +368,7 @@ if __name__ == '__main__':
         test_file_list.append(path)
     
     test_file_list = get_unfinished(test_file_list, args.result_dir)
-
+    
     if len(test_file_list) == 0:
         logger.info("No task left to run")
     else:
