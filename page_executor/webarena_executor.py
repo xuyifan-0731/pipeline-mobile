@@ -57,6 +57,7 @@ class WebarenaPageExecutor:
         self.device_pixel_ratio = self.page.evaluate("window.devicePixelRatio")
 
     def __get_current_status__(self):
+        print(self.last_turn_element, self.last_turn_element_tagname)
         page_position = self.page.evaluate("window.pageYOffset") + self.page.evaluate("window.innerHeight")
         scroll_height = self.page.evaluate("() => document.documentElement.scrollHeight")
         page_position_percentage = page_position / scroll_height
@@ -79,12 +80,14 @@ class WebarenaPageExecutor:
         self.new_page_captured = False
         self.context.on("page", self.__capture_new_page__)
         self.current_return = None
+        self.action_return = create_none_action()
 
         local_context = self.__get_class_methods__()
         local_context.update(**{'self': self})
         
         signal.alarm(30)
         try:
+        # if True:
             exec(code_snippet, {}, local_context)
             signal.alarm(0)
         except:
@@ -94,10 +97,14 @@ class WebarenaPageExecutor:
             action["text"] = error_msg
             self.action_return = action
         
-        if self.current_return['operation'] != 'do' 
-            or self.current_return['action'] not in {'Click', 'Right Click', 'Select Dropdown Option'}:
+        if not self.current_return:
+            error_msg = f"The following code generates an unexpected error:\n```\n{code_snippet}\n```"
+            self.current_return = {"operation": "quote", "kwargs": {"content": error_msg}}
+        elif (
+            self.current_return['operation'] != 'do' or
+            self.current_return['action'] not in {'Click', 'Right Click', 'Select Dropdown Option'}
+        ):
             self.last_turn_element, self.last_turn_element_tagname = None, None
-            self.action_return = create_none_action()
             
         return self.current_return
 
@@ -177,10 +184,13 @@ class WebarenaPageExecutor:
 
     def find_element_by_instruction(self, instruction):
         (center_x, center_y), bbox = get_relative_bbox_center(self.page, instruction, self.current_screenshot)
-        elf.last_turn_element = self.__get_element_by_coordinates__(
-            (center_x / self.device_pixel_ratio, center_y / self.device_pixel_ratio)
-        )  # save the element
-        self.last_turn_element_tagname = self.last_turn_element.evaluate("element => element.tagName")
+        try:
+            self.last_turn_element = self.__get_element_by_coordinates__(
+                (center_x / self.device_pixel_ratio, center_y / self.device_pixel_ratio)
+            )  # save the element
+            self.last_turn_element_tagname = self.last_turn_element.evaluate("element => element.tagName")
+        except:
+            self.last_turn_element, self.last_turn_element_tagname = None, None
         return instruction, (center_x, center_y), bbox
 
     def screenshot_satisfies(self, condition):
@@ -282,6 +292,7 @@ class WebarenaPageExecutor:
                 (o["text"], o["value"]) for o in self.__get_select_element_options__(self.last_turn_element))
             assert argument in selector_option_dict
             self.last_turn_element.select_option(value=selector_option_dict[argument])
+        self.current_return = {"operation": "do", "action": 'Select Dropdown Option', "kwargs": {"argument": argument, "element": element}}
     
     def match_key(self, key_comb: str):
         key = map_keys(key_comb)

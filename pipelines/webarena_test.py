@@ -81,7 +81,8 @@ signal.signal(signal.SIGALRM, timeout_handler)
 def get_code_snippet(content):
     code = re.search(r'```.*?\n([\s\S]+?)\n```', content)
     if code is None:
-        raise RuntimeError()
+        return ""
+        # raise RuntimeError()
     code = code.group(1)
     return code
 
@@ -155,26 +156,24 @@ def run(
             prompt = page_executor.__get_current_status__() if record.turn_number > 0 else instruction
             print('model generating...')
             
-            # signal.alarm(45)
-            # try:
-            #     content = openai_engine.webarena_generate(
-            #         prompt=prompt,
-            #         image_path=page_executor.current_screenshot,
-            #         turn_number=record.turn_number,
-            #         ouput__0=record.format_history(),
-            #         sys_prompt=options.get("sites", "basic")[0],
-            #     )
-            # except TimeoutException:
-            #     timeout_count += 1
-            #     print('[Prediction Timeout]', time.time() - stt)
-            #     # time.sleep(5)
-            #     continue
+            signal.alarm(45)
+            try:
+                content = openai_engine.webarena_generate(
+                    prompt=prompt,
+                    image_path=page_executor.current_screenshot,
+                    turn_number=record.turn_number,
+                    ouput__0=record.format_history(),
+                    sys_prompt=options.get("sites", "basic")[0],
+                )
+            except TimeoutException:
+                timeout_count += 1
+                print('[Prediction Timeout]', time.time() - stt)
+                continue
             
-            input('your move > ')
-            content = open("action.txt", "r").read()
-            
-            # content = '```\n'+ input(prompt+'\n') + '\n```'
-            record.update_response(page, content)
+            # input('your move > ')
+            # content = open("action.txt", "r").read()
+
+            record.update_response(page, content, prompt=prompt)
             print(content)
             print('[Predict Time]', time.time() - stt)
             
@@ -333,7 +332,8 @@ def get_unfinished(config_files: list[str], result_dir: str) -> list[str]:
             jd = {}
         
         if len(jd.get('actions', [])) >= 0:
-            task_id = os.path.basename(fn).split(".")[0] 
+            task_id = os.path.basename(fn).split(".")[0]
+            task_ids.append(task_id)
 
     unfinished_configs = []
     for config_file in config_files:
