@@ -57,7 +57,6 @@ class WebarenaPageExecutor:
         self.device_pixel_ratio = self.page.evaluate("window.devicePixelRatio")
 
     def __get_current_status__(self):
-        print(self.last_turn_element, self.last_turn_element_tagname)
         page_position = self.page.evaluate("window.pageYOffset") + self.page.evaluate("window.innerHeight")
         scroll_height = self.page.evaluate("() => document.documentElement.scrollHeight")
         page_position_percentage = page_position / scroll_height

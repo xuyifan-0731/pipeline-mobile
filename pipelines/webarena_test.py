@@ -148,7 +148,7 @@ def run(
     out_path = os.path.join(options["result_dir"], "actions", f"{task_id}.json")
                 
     timeout_count = 0
-    while record.turn_number + timeout_count * 0.03 <= options.get("max_steps", 30):
+    while record.turn_number + timeout_count * 0.1 <= options.get("max_steps", 30):
         update_action_history(out_path, task_id, raw_actions=actions)
         if True:
         # try:
@@ -156,7 +156,7 @@ def run(
             prompt = page_executor.__get_current_status__() if record.turn_number > 0 else instruction
             print('model generating...')
             
-            signal.alarm(45)
+            signal.alarm(90)
             try:
                 content = openai_engine.webarena_generate(
                     prompt=prompt,
