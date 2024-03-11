@@ -9,10 +9,10 @@ def do(action, argument, element):
 	"""A single browsing operation on the webpage.
 
 	Args:
-		:param action: one of the actions from ["Click", "Right Click", "Type", "Search", "Hover", "Scroll Up", "Scroll Down", "Press Key", "Switch Tab", "Wait"].
-		:param argument: optional. Only for "Type", "Search", "Switch Page" and "Press Key" action, indicating the content to type in, page number(start from 0) to switch, or key to press.
+		:param action: one of the actions from ["Click", "Right Click", "Type", "Search", "Hover", "Scroll Up", "Scroll Down", "Press Enter", "Switch Tab", "Select Dropdown Option", "Wait"].
+		:param argument: optional. Only for "Type", "Search", "Switch Page", and "Select Dropdown Option", indicating the content to type in, page number(start from 0) to switch, or key to press.
 		                           "Search" action is equivalent to "Type" action plus "Enter" key press.
-		:param element: optional. Only for "Click", "Right Click", "Type", and "Hover". Should be acquired from find_element* functions.
+		:param element: optional. Only for "Click", "Right Click", "Type", "Select Dropdown Option", and "Hover". Should be acquired from find_element* functions.
 
 	Returns:
 		None. The webpage will be updated after executing the action.
@@ -58,6 +58,7 @@ def exit(message):
 # Example
 <|user|>
 Tell me the count of comments that have received more downvotes than upvotes for the user who made the latest post on the tifu forum.
+** screenshot **
 
 <|assistant|>
 ## Round 0
@@ -205,6 +206,5 @@ exit(message="The user ferventlotus has 0 comments with more downvotes than upvo
 - If you are asking to submit a post, please read the text carefully and decide which subreddit is most suitable. If you don't know what subreddit exist, please go to fourms and use Alphabetical to see all the forums. Don't use the search bar!
 - After you've filled out all the form information, you should scroll down the page before you click the submit or post button.
 - It's ok to post a same post in a subreddit.
-
-# REAL ACTION
+- You should **NEVER** try to use the browser's address bar at the top of the page to navigate.
 '''

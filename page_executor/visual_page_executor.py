@@ -222,3 +222,4 @@ class SyncVisualPageExecutor:
                 (o["text"], o["value"]) for o in self.__get_select_element_options__(self.last_turn_element))
             assert argument in selector_option_dict
             self.last_turn_element.select_option(value=selector_option_dict[argument])
+        self.current_return = {"operation": "do", "action": 'Select Dropdown Option', "kwargs": {"argument": argument, "element": element}}

@@ -17,6 +17,9 @@ from .env_config import (
     WIKIPEDIA,
 )
 
+import logging
+logger = logging.getLogger("logger")
+
 def shopping_get_auth_token() -> str:
     response = requests.post(
         url=f"{SHOPPING}/rest/default/V1/integration/admin/token",
@@ -140,6 +143,7 @@ def gitlab_get_project_memeber_role(page: Page, account_name: str) -> str:
 
 def llm_fuzzy_match(pred: str, reference: str, question: str) -> float:
     """Check whether the prediction matches the reference with GPT4-turbo"""
+    
     messages: list[dict[str, Any]] = []
     # construct the question to ask
     message = "Help a teacher to grade the answer of a student given a question. Keep in mind that the student may use different phrasing or wording to answer the question. The goal is to evaluate whether the answer is semantically equivalent to the reference answer.\n"
@@ -153,6 +157,9 @@ def llm_fuzzy_match(pred: str, reference: str, question: str) -> float:
         {"role": "user", "content": message},
     ]
 
+    logger.info(f'[R] {reference}')
+    logger.info(f'[P] {pred}')
+    
     response = generate_from_openai_chat_completion(
         model="gpt-4-1106-preview",
         messages=messages,
@@ -161,6 +168,7 @@ def llm_fuzzy_match(pred: str, reference: str, question: str) -> float:
         top_p=1.0,
         context_length=0,
     ).lower()
+    
     if "partially correct" in response or "incorrect" in response:
         return 0.0
     elif "correct" in response:

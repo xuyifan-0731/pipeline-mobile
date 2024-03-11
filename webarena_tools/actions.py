@@ -88,51 +88,50 @@ def is_equivalent(a: Action, b: Action) -> bool:
     """Return True if two actions are equal."""
     if a["action_type"] != b["action_type"]:
         return False
-    match (a["action_type"]):
-        case ActionTypes.NONE:
-            return True
-        case ActionTypes.SCROLL:
-            da = "up" if "up" in a["direction"] else "down"
-            db = "up" if "up" in b["direction"] else "down"
-            return da == db
-        case ActionTypes.KEY_PRESS:
-            return a["key_comb"] == b["key_comb"]
-        case ActionTypes.MOUSE_CLICK | ActionTypes.MOUSE_HOVER:
-            return np.allclose(a["coords"], b["coords"])
-        case ActionTypes.TYPE:
-            return np.allclose(a["coords"], b["coords"]) and a["text"] == b["text"]
-        case ActionTypes.KEYBOARD_TYPE:
-            return a["text"] == b["text"]
-        case ActionTypes.CLICK | ActionTypes.HOVER:  # TODO: can be further optimized
-            if a["element_id"] and b["element_id"]:
-                return a["element_id"] == b["element_id"]
-            elif a["element_role"] and b["element_role"]:
-                return (
-                    a["element_role"] == b["element_role"]
-                    and a["element_name"] == b["element_name"]
-                )
-            elif a["pw_code"] and b["pw_code"]:
-                return a["pw_code"] == b["pw_code"]
-            else:
-                return False
-        case ActionTypes.PAGE_FOCUS:
-            return a["page_number"] == b["page_number"]
-        case ActionTypes.NEW_TAB:
-            return True
-        case ActionTypes.GO_BACK:
-            return True
-        case ActionTypes.GO_FORWARD:
-            return True
-        case ActionTypes.GOTO_URL:
-            return a["url"] == b["url"]
-        case ActionTypes.PAGE_CLOSE:
-            return True
-        case ActionTypes.CHECK | ActionTypes.SELECT_OPTION:
+    if a["action_type"] == ActionTypes.NONE:
+        return True
+    elif a["action_type"] == ActionTypes.SCROLL:
+        da = "up" if "up" in a["direction"] else "down"
+        db = "up" if "up" in b["direction"] else "down"
+        return da == db
+    elif a["action_type"] == ActionTypes.KEY_PRESS:
+        return a["key_comb"] == b["key_comb"]
+    elif a["action_type"] == ActionTypes.MOUSE_CLICK | ActionTypes.MOUSE_HOVER:
+        return np.allclose(a["coords"], b["coords"])
+    elif a["action_type"] == ActionTypes.TYPE:
+        return np.allclose(a["coords"], b["coords"]) and a["text"] == b["text"]
+    elif a["action_type"] == ActionTypes.KEYBOARD_TYPE:
+        return a["text"] == b["text"]
+    elif a["action_type"] == ActionTypes.CLICK | ActionTypes.HOVER:  # TODO: can be further optimized
+        if a["element_id"] and b["element_id"]:
+            return a["element_id"] == b["element_id"]
+        elif a["element_role"] and b["element_role"]:
+            return (
+                a["element_role"] == b["element_role"]
+                and a["element_name"] == b["element_name"]
+            )
+        elif a["pw_code"] and b["pw_code"]:
             return a["pw_code"] == b["pw_code"]
-        case ActionTypes.STOP:
-            return a["answer"] == b["answer"]
-        case _:
+        else:
             return False
+    elif a["action_type"] == ActionTypes.PAGE_FOCUS:
+        return a["page_number"] == b["page_number"]
+    elif a["action_type"] == ActionTypes.NEW_TAB:
+        return True
+    elif a["action_type"] == ActionTypes.GO_BACK:
+        return True
+    elif a["action_type"] == ActionTypes.GO_FORWARD:
+        return True
+    elif a["action_type"] == ActionTypes.GOTO_URL:
+        return a["url"] == b["url"]
+    elif a["action_type"] == ActionTypes.PAGE_CLOSE:
+        return True
+    elif a["action_type"] == ActionTypes.CHECK | ActionTypes.SELECT_OPTION:
+        return a["pw_code"] == b["pw_code"]
+    elif a["action_type"] == ActionTypes.STOP:
+        return a["answer"] == b["answer"]
+    else:
+        return False
         
 def create_none_action():
     return {
