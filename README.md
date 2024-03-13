@@ -2,7 +2,18 @@
 
 ## Mobile Pipeline Usage
 
-1. 参照appagent安装ADB和android studio，并且在本机启动android虚拟机，或按照ADB并且连接真机。确保命令行执行adb device有结果。
+1. 参照appagent安装ADB和android studio，并且在本机启动android虚拟机，或按照ADB并且连接真机。确保命令行执行adb device有结果。可参考一下步骤
+   1. On your PC, download and install [Android Debug Bridge](https://developer.android.com/tools/adb) (adb) which is a
+      command-line tool that lets you communicate with your Android device from the PC.
+   2. Get an Android device and enable the USB debugging that can be found in Developer Options in Settings.
+
+   3. Connect your device to your PC using a USB cable.
+
+   4. (**if without Android device**) If you do not have an Android device. We recommend you download
+      [Android Studio](https://developer.android.com/studio/run/emulator) and use the emulator that comes with it.
+      The emulator can be found in the device manager of Android Studio. You can install apps on an emulator by
+      downloading APK files from the internet and dragging them to the emulator.
+      AppAgent can detect the emulated device and operate apps on it just like operating a real device.
 2. pip install -r requirement.txt
 3. python mobile_test.py 目前需要在mobile_test.py 中修改instruction
 

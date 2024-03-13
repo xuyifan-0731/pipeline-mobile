@@ -25,3 +25,10 @@ text-generation
 transformers==4.33.2
 sentencepiece==0.2.0
 opencv-python
+
+argparse
+colorama
+dashscope
+pyshine
+pyyaml
+requests
