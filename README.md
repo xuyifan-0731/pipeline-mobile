@@ -1,6 +1,17 @@
 # Pipeline Usage
 
+## Mobile Pipeline Usage
+
+1. 参照appagent安装ADB和android studio，并且在本机启动android虚拟机，或按照ADB并且连接真机。确保命令行执行adb device有结果。
+2. pip install -r requirement.txt
+3. python mobile_test.py 目前需要在mobile_test.py 中修改instruction
+
+
+
+
+
 ## 环境配置
+
 采用的 SeeAct 使用的环境配置，不一定全部必要
 - 进入Pipeline，bash setup.sh
 - 在本地运行。记得修改.env里的 OpenAI API Key

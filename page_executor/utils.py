@@ -11,7 +11,7 @@ def plot_bbox(bbox, screenshot):
 
 def call_dino(instruction, screenshot_path):
     files = {'image': open(screenshot_path, 'rb')}
-    response = requests.post("http://172.19.64.21:24026/v1/executor", files=files,
+    response = requests.post("http://172.19.64.42:24026/v1/executor", files=files,
                              data={"text_prompt": f"{instruction}"})
     return [int(s) for s in response.json()['response'].split(',')]
 

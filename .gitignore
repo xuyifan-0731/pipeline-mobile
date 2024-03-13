@@ -6,6 +6,10 @@ temp
 __pycache__
 traces
 
+.DS_Store
+.idea/
+templates/.DS_Store
+
 temp
 traces
 **/__pycache__
@@ -14,6 +18,9 @@ test
 
 # webarena
 .auth/
+
+Screen_shot
+traces
 
 config_files*/*0.json
 config_files*/*1.json

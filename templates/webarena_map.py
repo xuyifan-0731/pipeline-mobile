@@ -215,3 +215,4 @@ REMEMBER:
 - On a dropdown element (Calendar, Nationality, Language, Transportation, etc.), first try directly using Search action to select the option you want.
 - Direction sign: When you want to search the distance from one place to another place, you should click the direction sign to achieve it, instead of searh bar. 
 '''
+

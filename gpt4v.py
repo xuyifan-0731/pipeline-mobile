@@ -10,8 +10,8 @@ from openai.error import (
     InvalidRequestError
 )
 
-from .templates.template_with_loop import SYSTEM_PROMPT
-from .templates import system_templates, WEBARENA_BASIC_PROMPT
+from templates.template_with_loop import SYSTEM_PROMPT
+from templates import system_templates
 
 import base64
 from dotenv import load_dotenv

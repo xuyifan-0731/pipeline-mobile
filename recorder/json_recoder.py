@@ -2,10 +2,6 @@ import time
 import os
 import json
 
-from ..webarena_tools import (
-    map_url_to_real,
-)
-
 class JSONRecorder:
     def __init__(self, instruction, page_executor, trace_dir="../traces", options={}):
         self.id = int(options.get("task_id", time.time()))
@@ -20,15 +16,15 @@ class JSONRecorder:
             with open(self.file_path, 'w') as f:
                 f.write('')
 
-    def update_response(self, page, response, prompt="** screenshot **"):
+    def update_response(self, context, response, prompt="** screenshot **"):
         step = {
             "trace_id": self.id,
             "index": self.turn_number,
             "prompt": prompt if self.turn_number > 0 else f"{self.instruction}",
             "image": self.page_executor.current_screenshot,
             "response": response,
-            "url": map_url_to_real(page.url),
-            "window": page.viewport_size,
+            #"url": map_url_to_real(page.url),
+            "window": context.viewport_size,
             "target": self.instruction
         }
         self.contents.append(step)
