@@ -24,6 +24,7 @@ openai.api_key = os.getenv('GPT4V_TOKEN')
 
 
 def run_connection_test():
+    print("Testing gpt4v connection...")
     response = openai.ChatCompletion.create(
         model="gpt-4-1106-preview",
         messages=[{"role": "user", "content": "你好"}],

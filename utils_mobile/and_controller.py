@@ -222,3 +222,4 @@ class AndroidController:
         adb_command = f"adb -s {self.device} shell input swipe {start_x} {start_x} {end_x} {end_y} {duration}"
         ret = execute_adb(adb_command)
         return ret
+

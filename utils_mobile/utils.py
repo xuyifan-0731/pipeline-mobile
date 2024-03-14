@@ -1,9 +1,9 @@
 import base64
 import cv2
+import sys
 import pyshine as ps
 
 from colorama import Fore, Style
-
 
 def print_with_color(text: str, color=""):
     if color == "red":
@@ -98,3 +98,4 @@ def draw_grid(img_path, output_path):
 def encode_image(image_path):
     with open(image_path, "rb") as image_file:
         return base64.b64encode(image_file.read()).decode('utf-8')
+

@@ -2,8 +2,9 @@ from page_executor import MobilePageExecutor
 from recorder import JSONRecorder
 
 from gpt4v import OpenaiEngine
-from utils_mobile.and_controller import list_all_devices, AndroidController
+
 from utils_mobile.utils import print_with_color
+from utils_mobile.and_controller import AndroidController, list_all_devices
 
 import os
 import re
@@ -33,6 +34,28 @@ def get_code_snippet(content):
     code = code.group(1)
     return code
 
+def get_mobile_device():
+    device_list = list_all_devices()
+    if not device_list:
+        print_with_color("ERROR: No device found!", "red")
+        sys.exit()
+    print_with_color(f"List of devices attached:\n{str(device_list)}", "yellow")
+    if len(device_list) == 1:
+        device = device_list[0]
+        print_with_color(f"Device selected: {device}", "yellow")
+    else:
+        print_with_color("Please choose the Android device to start demo by entering its ID:", "blue")
+        device = input()
+
+    controller = AndroidController(device)
+    width, height = controller.get_device_size()
+    if not width and not height:
+        print_with_color("ERROR: Invalid device size!", "red")
+        sys.exit()
+    print_with_color(f"Screen resolution of {device}: {width}x{height}", "yellow")
+
+    return controller
+
 
 def run(controller, instruction=None) -> None:
     page_executor = MobilePageExecutor(context=controller, engine=openai_engine,
@@ -57,33 +80,6 @@ def run(controller, instruction=None) -> None:
         if page_executor.is_finish:
             print_with_color(f"Autonomous exploration completed successfully.", "yellow")
             break
-        # input("Continue? >>>")
-        # page_executor.__update_screenshot__()
-
-
-
-
-def get_mobile_device():
-    device_list = list_all_devices()
-    if not device_list:
-        print_with_color("ERROR: No device found!", "red")
-        sys.exit()
-    print_with_color(f"List of devices attached:\n{str(device_list)}", "yellow")
-    if len(device_list) == 1:
-        device = device_list[0]
-        print_with_color(f"Device selected: {device}", "yellow")
-    else:
-        print_with_color("Please choose the Android device to start demo by entering its ID:", "blue")
-        device = input()
-
-    controller = AndroidController(device)
-    width, height = controller.get_device_size()
-    if not width and not height:
-        print_with_color("ERROR: Invalid device size!", "red")
-        sys.exit()
-    print_with_color(f"Screen resolution of {device}: {width}x{height}", "yellow")
-
-    return controller
 
 def main(instruction=None):
     controller = get_mobile_device()
@@ -92,5 +88,5 @@ def main(instruction=None):
 
 if __name__ == '__main__':
     # main()
-    main('Scroll down this page until you find the first comment in the comment section')
+    main('Open Baidu, search for the music video of the song "Wonderful Tonight" and leave a praising comment there')
     # main("Sort products by price. Start on http://localhost:7770/sports-outdoors/hunting-fishing.html")

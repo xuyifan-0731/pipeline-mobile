@@ -131,7 +131,7 @@ class MobilePageExecutor:
 
         # 点击计算出的中心点坐标
         # print(center_x, center_y)
-        plot_bbox([int(center_x - width_x / 2), int(center_y - height_y / 2), int(width_x), int(height_y)], screenshot)
+        plot_bbox([int(center_x - width_x / 2), int(center_y - height_y / 2), int(width_x), int(height_y)], screenshot, instruction)
 
         return (int(center_x), int(center_y)), relative_bbox
 
@@ -191,21 +191,19 @@ class MobilePageExecutor:
 
     def press_enter(self, argument):
         self.context.enter()
-        self.page.keyboard.press("Enter")
         self.current_return = {"operation": "do", "action": 'Press Enter', "kwargs": {"argument": argument}}
 
     def press_back(self, argument):
         self.context.back()
-        self.page.keyboard.press("Enter")
         self.current_return = {"operation": "do", "action": 'Press Back', "kwargs": {"argument": argument}}
 
     def press_home(self, argument):
         self.context.home()
         self.current_return = {"operation": "do", "action": 'Press Home', "kwargs": {"argument": argument}}
 
-    def finish(self, messgae = None):
+    def finish(self, message = None):
         self.is_finish = True
-        self.current_return = {"operation": "do", "action": 'finish', "kwargs": {"message": messgae}}
+        self.current_return = {"operation": "do", "action": 'finish', "kwargs": {"message": message}}
 
     def wait(self):
         time.sleep(5)
