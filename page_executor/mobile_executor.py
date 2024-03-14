@@ -95,20 +95,25 @@ class MobilePageExecutor:
         return [{"value": option.get_attribute('value'), "text": option.text_content().strip(' \n')} for option in
                 element.query_selector_all("option")]
 
-    def do(self, action=None, argument=None, element=None):
-        assert action in ["Click","Type","Swipe","Press Enter","Press Home","Press Back"],"Unsupported Action"
-        if action == "Click":
-            self.click(element)
+    def do(self, action=None, argument=None, element=None, **kwargs):
+        assert action in ["Tap","Type","Swipe","Press Enter","Press Home","Press Back","Long Press"],"Unsupported Action"
+        if action == "Tap":
+            self.tap(element)
         elif action == "Type":
             self.type(argument, element)
-        #elif action == "Swipe":
-            #self.swipe(argument)
+        elif action == "Swipe":
+            if "dist" in kwargs:
+                self.swipe(argument, element, kwargs["dist"])
+            else:
+                self.swipe(argument, element)
         elif action == "Press Enter":
             self.press_enter(argument)
         elif action == "Press Home":
             self.press_home(argument)
         elif action == "Press Back":
             self.press_back(argument)
+        elif action == "Long Press":
+            self.long_press(element)
         else:
             raise NotImplementedError()
         self.__update_screenshot__()
@@ -146,11 +151,31 @@ class MobilePageExecutor:
         self.current_return = {"operation": "exit", "kwargs": {"message": message}}
         self.__update_screenshot__()
 
-    def click(self, element):
+    def tap(self, element):
         instruction, (center_x, center_y), bbox = element
         self.context.tap(center_x, center_y)
         self.current_return = {"operation": "do", "action": 'Click', "kwargs": {"instruction": instruction},
                                "bbox": bbox}
+
+    def long_press(self, element):
+        instruction, (center_x, center_y), bbox = element
+        self.context.long_press(center_x, center_y)
+        self.current_return = {"operation": "do", "action": 'Long Press', "kwargs": {"instruction": instruction},
+                               "bbox": bbox}
+
+    def swipe(self, argument, element = None, dist = "medium"):
+        if element is not None:
+            instruction, (center_x, center_y), bbox = element
+            self.context.swipe(center_x, center_y, argument, dist)
+            self.current_return = {"operation": "do", "action": 'Swipe',
+                                   "kwargs": {"argument": argument, "instruction": instruction, "dist": dist},
+                                   "bbox": bbox}
+        else:
+            center_x, center_y = None, None
+            self.context.swipe(center_x, center_y, argument, dist)
+            self.current_return = {"operation": "do", "action": 'Swipe',
+                                   "kwargs": {"argument": argument, "instruction": None, "dist": dist},
+                                   "bbox": None}
 
     def type(self, argument, element = None):
         instruction = None
@@ -160,11 +185,6 @@ class MobilePageExecutor:
             self.context.tap(center_x, center_y)
         self.context.text(argument)
         self.context.enter()
-        #self.page.mouse.click(center_x / self.device_pixel_ratio, center_y / self.device_pixel_ratio, button='left')
-        #self.page.keyboard.press('Meta+A')
-        #self.page.keyboard.press('Backspace')
-        #self.page.keyboard.type(argument)
-
         self.current_return = {"operation": "do", "action": 'Type',
                                "kwargs": {"argument": argument, "instruction": instruction},
                                "bbox": bbox}
@@ -183,10 +203,10 @@ class MobilePageExecutor:
         self.context.home()
         self.current_return = {"operation": "do", "action": 'Press Home', "kwargs": {"argument": argument}}
 
-    def finish(self):
+    def finish(self, messgae = None):
         self.is_finish = True
-        self.current_return = {"operation": "do", "action": 'finish'}
+        self.current_return = {"operation": "do", "action": 'finish', "kwargs": {"message": messgae}}
 
     def wait(self):
-        self.page.wait_for_timeout(5000)
+        time.sleep(5)
         self.current_return = {"operation": "do", "action": 'Wait'}

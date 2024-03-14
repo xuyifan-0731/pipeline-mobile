@@ -1,7 +1,6 @@
 from page_executor import MobilePageExecutor
 from recorder import JSONRecorder
 
-from playwright.sync_api import Playwright, sync_playwright
 from gpt4v import OpenaiEngine
 from utils_mobile.and_controller import list_all_devices, AndroidController
 from utils_mobile.utils import print_with_color
@@ -93,5 +92,5 @@ def main(instruction=None):
 
 if __name__ == '__main__':
     # main()
-    main('Open baidu and search SORA')
+    main('Scroll down this page until you find the first comment in the comment section')
     # main("Sort products by price. Start on http://localhost:7770/sports-outdoors/hunting-fishing.html")
