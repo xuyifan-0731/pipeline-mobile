@@ -27,6 +27,7 @@ if SCREENSHOT_DIR is None:
 os.makedirs(TRACE_DIR, exist_ok=True)
 os.makedirs(SCREENSHOT_DIR, exist_ok=True)
 
+
 def get_code_snippet(content):
     code = re.search(r'```.*?\n([\s\S]+?)\n```', content)
     if code is None:
@@ -37,7 +38,7 @@ def get_code_snippet(content):
 
 def run(controller, instruction=None) -> None:
     page_executor = MobilePageExecutor(context=controller, engine=openai_engine,
-                                           screenshot_dir="Screen_shot")
+                                       screenshot_dir=SCREENSHOT_DIR)
     instruction = input("What would you like to do? >>> ") if instruction is None else instruction
     record = JSONRecorder(instruction=instruction, page_executor=page_executor, trace_dir=TRACE_DIR)
     page_executor.__update_screenshot__()
@@ -45,7 +46,7 @@ def run(controller, instruction=None) -> None:
         prompt = page_executor.__get_current_status__() if record.turn_number > 0 else instruction
         content = openai_engine.generate(prompt=prompt, image_path=page_executor.current_screenshot,
                                          turn_number=record.turn_number, ouput__0=record.format_history()
-                                         ,sys_prompt="android_basic")
+                                         , sys_prompt="android_basic")
         record.update_response(controller, content)
 
         exe_res = page_executor(get_code_snippet(content))
@@ -60,8 +61,6 @@ def run(controller, instruction=None) -> None:
             break
         # input("Continue? >>>")
         # page_executor.__update_screenshot__()
-
-
 
 
 def get_mobile_device():
@@ -86,6 +85,7 @@ def get_mobile_device():
 
     return controller
 
+
 def main(instruction=None):
     controller = get_mobile_device()
     run(controller, instruction=instruction)
@@ -93,5 +93,5 @@ def main(instruction=None):
 
 if __name__ == '__main__':
     # main()
-    main('Open baidu and search SORA')
+    main('Please navigate me to Stanford University')
     # main("Sort products by price. Start on http://localhost:7770/sports-outdoors/hunting-fishing.html")

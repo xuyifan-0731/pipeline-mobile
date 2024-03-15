@@ -18,7 +18,22 @@
 3. python mobile_test.py 目前需要在mobile_test.py 中修改instruction
 
 
+## 在 MacOS 上运行的几个注意事项
 
+1. Mac 上的 `adb` 可能需要通过加载环境变量的方式运行，但是默认的方案中不会主动加载环境变量，因此需要调整 `and_controller.py` 中的 `execute_adb` 函数实现：
+```python
+env = os.environ.copy()
+env["PATH"] = f"/Users/{getpass.getuser()}/Library/Android/sdk/platform-tools:" + env["PATH"]
+env["PATH"] = f"/Users/{getpass.getuser()}/Library/Android/sdk/tools:" + env["PATH"]
+result = subprocess.run(adb_command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True,
+                      executable='/bin/zsh', env=env)
+```
+2. 如果遇到模拟器没有网络的情况，考虑在命令行启动时加入 `-no-snapshot-load` 参数（等同于重装系统）来恢复网络配置
+3. Emulator 通过命令行启动时，不会主动采用宿主机的 system proxy（如下方式启动）
+```bash
+emulator -avd Pixel_3a_API_34_extension_level_7_arm64-v8a -netdelay none -netspeed full -no-snapshot-load 
+```
+如果需要使用宿主机的 system proxy，需要将 emulator 的网络连接设置为 AndroidWifi，然后设置该 Wifi 的 Proxy 为 `10.0.2.2:<proxy_port>`，其中 `10.0.2.2` 为 emulator 默认分配给宿主机的 IP 地址。
 
 
 ## 环境配置
