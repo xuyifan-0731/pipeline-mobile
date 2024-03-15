@@ -199,8 +199,12 @@ class AndroidController:
 
     def swipe(self, x, y, direction, dist="medium", quick=False):
         unit_dist = int(self.width / 10)
+        if x == None:
+            x = self.width // 2
+        if y == None:
+            y = self.height // 2
         if dist == "long":
-            unit_dist *= 3
+            unit_dist *= 10
         elif dist == "medium":
             unit_dist *= 2
         if direction == "up":
@@ -224,3 +228,4 @@ class AndroidController:
         adb_command = f"adb -s {self.device} shell input swipe {start_x} {start_x} {end_x} {end_y} {duration}"
         ret = execute_adb(adb_command)
         return ret
+

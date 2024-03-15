@@ -14,8 +14,17 @@
       The emulator can be found in the device manager of Android Studio. You can install apps on an emulator by
       downloading APK files from the internet and dragging them to the emulator.
       AppAgent can detect the emulated device and operate apps on it just like operating a real device.
-2. pip install -r requirement.txt
-3. python mobile_test.py 目前需要在mobile_test.py 中修改instruction
+
+2. 创建一个.env，在里面填写:
+
+   ```
+   GPT4V_TOKEN=""
+   TRACE_DIR="./traces"
+   ```
+
+3. pip install -r requirement.txt
+
+4. python mobile_test.py 目前需要在mobile_test.py 中修改instruction
 
 
 ## 在 MacOS 上运行的几个注意事项
