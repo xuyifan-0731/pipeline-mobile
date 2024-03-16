@@ -18,7 +18,6 @@ class MobilePageExecutor:
         self.engine = engine
         self.screenshot_dir = screenshot_dir
         self.task_id = int(time.time())
-        os.makedirs(f'{self.screenshot_dir}/{self.task_id}')
 
         self.new_page_captured = False
         self.current_screenshot = None
@@ -82,9 +81,12 @@ class MobilePageExecutor:
             methods_dict[name] = partial(method, self)
         return methods_dict
 
-    def __update_screenshot__(self):
+    def update_screenshot(self, prefix = None):
         time.sleep(5)
-        self.current_screenshot = f"{self.screenshot_dir}/{self.task_id}/screenshot-{time.time()}.png"
+        if prefix is None:
+            self.current_screenshot = f"{self.screenshot_dir}/screenshot-{time.time()}.png"
+        else:
+            self.current_screenshot = f"{self.screenshot_dir}/screenshot-{prefix}-{time.time()}.png"
         self.context.save_screenshot(self.current_screenshot)
 
     def __get_element_by_coordinates__(self, coordinates):
@@ -116,7 +118,7 @@ class MobilePageExecutor:
             self.long_press(element)
         else:
             raise NotImplementedError()
-        self.__update_screenshot__()
+        # self.__update_screenshot__() # update screenshot 全部移到recoder内
 
     def get_relative_bbox_center(self, instruction, screenshot):
         # 获取相对 bbox
@@ -147,9 +149,9 @@ class MobilePageExecutor:
     def screenshot_satisfies(self, condition):
         return screenshot_satisfies(self.engine, condition, self.current_screenshot)
 
-    def exit(self, message=None):
-        self.current_return = {"operation": "exit", "kwargs": {"message": message}}
-        self.__update_screenshot__()
+    #def exit(self, message=None):
+        #self.current_return = {"operation": "exit", "kwargs": {"message": message}}
+        #self.__update_screenshot__()
 
     def tap(self, element):
         instruction, (center_x, center_y), bbox = element

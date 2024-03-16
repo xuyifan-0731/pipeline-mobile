@@ -99,3 +99,27 @@ def encode_image(image_path):
     with open(image_path, "rb") as image_file:
         return base64.b64encode(image_file.read()).decode('utf-8')
 
+import os
+import subprocess
+
+class Android_Screen_Recorder:
+    def __init__(self):
+        self.process = None
+
+    def start_screen_record(self, file_name):
+        print("Starting screen record")
+        command = f'adb shell screenrecord /sdcard/{file_name}.mp4'
+        self.process = subprocess.Popen(command, shell=True)
+
+    def stop_screen_record(self):
+        print("Stopping screen record")
+        self.process.terminate()
+
+    def pull_video_to_local(self, file_name):
+        print("Pulling video to local")
+        os.system(f'adb pull /sdcard/{file_name}.mp4 .')
+
+    def delete_device_video(self, file_name):
+        print("Deleting device video")
+        os.system(f'adb shell rm /sdcard/{file_name}.mp4')
+
