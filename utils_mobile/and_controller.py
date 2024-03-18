@@ -229,3 +229,7 @@ class AndroidController:
         ret = execute_adb(adb_command)
         return ret
 
+    def start_screen_record(self, prefix):
+        print("Starting screen record")
+        command = f'adb shell screenrecord /sdcard/{prefix}.mp4'
+        return subprocess.Popen(command, shell=True)

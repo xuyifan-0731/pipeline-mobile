@@ -3,17 +3,23 @@ import os
 import json
 
 class JSONRecorder:
-    def __init__(self, instruction, page_executor, trace_dir="../traces", options={}):
-        self.id = int(options.get("task_id", time.time()))
+    def __init__(self, id, instruction, page_executor, trace_dir, xml_dir, video_recoder = None, options={}):
+        self.id = id
         self.instruction = instruction
         self.page_executor = page_executor
 
         self.turn_number = 0
-        self.file_path = os.path.join(trace_dir, f'{self.id}.jsonl')
+        self.trace_file_path = os.path.join(trace_dir, 'trace.jsonl')
+        self.xml_file_path = os.path.join(xml_dir)
         self.contents = []
+        self.xml_history = []
+
+        if video_recoder is not None:
+            self.video_recoder = video_recoder
+            self.video_recoder.start_screen_record(id)
         
         if "reset" in options:
-            with open(self.file_path, 'w') as f:
+            with open(self.trace_file_path, 'w') as f:
                 f.write('')
 
     def update_response(self, context, response, prompt="** screenshot **"):
@@ -28,10 +34,12 @@ class JSONRecorder:
             "target": self.instruction
         }
         self.contents.append(step)
+        context.get_xml(prefix = str(self.turn_number) + ".xml", save_dir = self.xml_file_path)
+        self.page_executor.update_screenshot(prefix = str(self.turn_number))
 
     def update_execution(self, exe_res):
         self.contents[-1]['parsed_action'] = exe_res
-        with open(self.file_path, 'a') as f:
+        with open(self.trace_file_path, 'a') as f:
             f.write(json.dumps(self.contents[-1], ensure_ascii=False) + '\n')
 
     def format_history(self):

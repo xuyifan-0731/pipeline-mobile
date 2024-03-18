@@ -22,17 +22,16 @@ LOG_DIR = os.environ.get('LOG_DIR')
 
 if LOG_DIR is None:
     LOG_DIR = '../logs'
-id = str(time.time())
-TRACE_DIR = os.path.join(LOG_DIR, id, 'traces')
-SCREENSHOT_DIR = os.path.join(LOG_DIR, id, 'Screen')
-XML_DIR = os.path.join(LOG_DIR, id, 'xml')
-Video_DIR = os.path.join(LOG_DIR, id, 'video')
+TRACE_DIR = os.path.join(LOG_DIR, 'traces')
+SCREENSHOT_DIR = os.path.join(LOG_DIR, 'Screen')
+XML_DIR = os.path.join(LOG_DIR, 'xml')
+Video_DIR = os.path.join(LOG_DIR, 'video')
 
 os.makedirs(LOG_DIR, exist_ok=True)
 os.makedirs(TRACE_DIR, exist_ok=True)
 os.makedirs(SCREENSHOT_DIR, exist_ok=True)
 os.makedirs(XML_DIR, exist_ok=True)
-#os.makedirs(Video_DIR, exist_ok=True)
+os.makedirs(Video_DIR, exist_ok=True)
 
 def get_code_snippet(content):
     code = re.search(r'```.*?\n([\s\S]+?)\n```', content)
@@ -68,7 +67,8 @@ def run(controller, instruction=None) -> None:
     page_executor = MobilePageExecutor(context=controller, engine=openai_engine,
                                            screenshot_dir=SCREENSHOT_DIR)
     instruction = input("What would you like to do? >>> ") if instruction is None else instruction
-    record = JSONRecorder(id = id, instruction=instruction, page_executor=page_executor, trace_dir=TRACE_DIR, xml_dir=XML_DIR)
+    record = JSONRecorder(instruction=instruction, page_executor=page_executor, trace_dir=TRACE_DIR, xml_dir=XML_DIR)
+    page_executor.__update_screenshot__()
     while record.turn_number <= 100:
         prompt = page_executor.__get_current_status__() if record.turn_number > 0 else instruction
         content = openai_engine.generate(prompt=prompt, image_path=page_executor.current_screenshot,
@@ -86,7 +86,6 @@ def run(controller, instruction=None) -> None:
 
         if page_executor.is_finish:
             print_with_color(f"Autonomous exploration completed successfully.", "yellow")
-            page_executor.update_screenshot(prefix="end")
             break
 
 def main(instruction=None):
@@ -96,6 +95,5 @@ def main(instruction=None):
 
 if __name__ == '__main__':
     # main()
-    # main('Navigate me to Stanford University on the map')
-    main('I am in Beijing in Tsinghua University. Give me some choices about hotpot restaurants nearby.')
+    main('Open Baidu, search for the music video of the song "Wonderful Tonight" and leave a praising comment there')
     # main("Sort products by price. Start on http://localhost:7770/sports-outdoors/hunting-fishing.html")
