@@ -164,8 +164,8 @@ def do(action, argument=None, element=None, **kwargs):
         :param action: one of the actions from ["Tap", "Type", "Swipe", "Long Press","Press Home", "Press Back", "Press Enter", "Wait"].
         :param argument: optional. For "Type" actions, indicating the content to type in. After "Type" actions, "Press Enter" action is automatically executed.
                                    For "Swipe" actions, indicating the direction to swipe. Should be one of ["up", "down", "left", "right"]. An additional optional argument "dist" can be used, shoule be one of ["long", "medium", "short"].
-        :param element: optional. For "Tap" and "Long Press". Should be acquired from functions similar to find_element* but designed for mobile UI elements. 
-                                  For "Swipe" actions, You can provide the element to swipe on by find_element*, or not provide default from screen center.
+        :param element: optional. For "Tap" and "Long Press". Should be acquired from functions similar to find_element_by_instruction* but designed for mobile UI elements. 
+                                  For "Swipe" actions, You can provide the element to swipe on by find_element_by_instruction*, or not provide default from screen center.
 
     Returns:
         None. The device state or the foreground application state will be updated after executing the action.
