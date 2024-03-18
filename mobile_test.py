@@ -96,5 +96,5 @@ def main(instruction=None):
 
 if __name__ == '__main__':
     # main()
-    main('Open Amap, search for Standford University and get directions to it.')
+    main('Open Bilibili, search for Standford University')
     # main("Sort products by price. Start on http://localhost:7770/sports-outdoors/hunting-fishing.html")
