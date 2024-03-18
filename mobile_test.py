@@ -59,7 +59,7 @@ def get_mobile_device():
 
 def run(controller, instruction=None) -> None:
     page_executor = MobilePageExecutor(context=controller, engine=openai_engine,
-                                           screenshot_dir="Screen_shot")
+                                           screenshot_dir=SCREENSHOT_DIR)
     instruction = input("What would you like to do? >>> ") if instruction is None else instruction
     record = JSONRecorder(instruction=instruction, page_executor=page_executor, trace_dir=TRACE_DIR)
     page_executor.__update_screenshot__()
@@ -88,5 +88,6 @@ def main(instruction=None):
 
 if __name__ == '__main__':
     # main()
-    main('Open Baidu, search for the music video of the song "Wonderful Tonight" and leave a praising comment there')
+    # main('Navigate me to Stanford University on the map')
+    main('I am in Beijing in Tsinghua University. Give me some choices about hotpot restaurants nearby.')
     # main("Sort products by price. Start on http://localhost:7770/sports-outdoors/hunting-fishing.html")
