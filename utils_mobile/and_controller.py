@@ -186,6 +186,10 @@ class AndroidController:
         return ret
 
     def text(self, input_str):
+        adb_command = f'adb -s {self.device} input keyevent KEYCODE_MOVE_END'
+        ret = execute_adb(adb_command)
+        adb_command = f'adb -s {self.device} shell input keyevent --press $(for i in {{1..100}}; do echo -n "67 "; done)'
+        ret = execute_adb(adb_command)
         input_str = input_str.replace(" ", "%s")
         input_str = input_str.replace("'", "")
         adb_command = f"adb -s {self.device} shell input text {input_str}"

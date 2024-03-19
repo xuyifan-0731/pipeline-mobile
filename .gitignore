@@ -12,6 +12,8 @@ templates/.DS_Store
 
 temp
 traces
+logs
+logs/*
 **/__pycache__
 test
 .env
