@@ -178,6 +178,7 @@ class MobilePageExecutor:
             self.current_return = {"operation": "do", "action": 'Swipe',
                                    "kwargs": {"argument": argument, "instruction": None, "dist": dist},
                                    "bbox": None}
+        time.sleep(1)
 
     def type(self, argument, element = None):
         instruction = None
