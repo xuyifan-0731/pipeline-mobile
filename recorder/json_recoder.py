@@ -2,8 +2,9 @@ import time
 import os
 import json
 
+
 class JSONRecorder:
-    def __init__(self, id, instruction, page_executor, trace_dir, xml_dir, video_recoder = None, options={}):
+    def __init__(self, id, instruction, page_executor, trace_dir, xml_dir, video_recoder=None, options={}):
         self.id = id
         self.instruction = instruction
         self.page_executor = page_executor
@@ -17,7 +18,7 @@ class JSONRecorder:
         if video_recoder is not None:
             self.video_recoder = video_recoder
             self.video_recoder.start_screen_record(id)
-        
+
         if "reset" in options:
             with open(self.trace_file_path, 'w') as f:
                 f.write('')
@@ -29,18 +30,18 @@ class JSONRecorder:
             "prompt": prompt if self.turn_number > 0 else f"{self.instruction}",
             "image": self.page_executor.current_screenshot,
             "response": response,
-            #"url": map_url_to_real(page.url),
+            # "url": map_url_to_real(page.url),
             "window": context.viewport_size,
             "target": self.instruction
         }
         self.contents.append(step)
-        context.get_xml(prefix = str(self.turn_number) + ".xml", save_dir = self.xml_file_path)
-        self.page_executor.update_screenshot(prefix = str(self.turn_number))
+        context.get_xml(prefix=str(self.turn_number) + ".xml", save_dir=self.xml_file_path)
 
     def update_execution(self, exe_res):
         self.contents[-1]['parsed_action'] = exe_res
         with open(self.trace_file_path, 'a') as f:
             f.write(json.dumps(self.contents[-1], ensure_ascii=False) + '\n')
+        self.page_executor.update_screenshot(prefix=str(self.turn_number + 1))
 
     def format_history(self):
         history = []

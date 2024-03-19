@@ -120,7 +120,7 @@ class OpenaiEngine(Engine):
         (APIError, RateLimitError, APIConnectionError, ServiceUnavailableError, InvalidRequestError),
         on_backoff=handle_backoff,
         on_giveup=handle_giveup,
-        interval=1
+        interval=0.1
     )
     def generate(self, prompt: str, max_new_tokens=4096, temperature=None, model=None, image_path=None,
                  ouput__0=None, turn_number=0, current_feedback=None, sys_prompt="", **kwargs):

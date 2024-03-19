@@ -1,12 +1,13 @@
 import os
+import getpass
 import subprocess
 import xml.etree.ElementTree as ET
 
-#from config import load_config
+# from config import load_config
 from utils_mobile.utils import print_with_color
 
 
-#configs = load_config()
+# configs = load_config()
 
 
 class AndroidElement:
@@ -18,7 +19,11 @@ class AndroidElement:
 
 def execute_adb(adb_command):
     # print(adb_command)
-    result = subprocess.run(adb_command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+    env = os.environ.copy()
+    env["PATH"] = f"/Users/{getpass.getuser()}/Library/Android/sdk/platform-tools:" + env["PATH"]
+    env["PATH"] = f"/Users/{getpass.getuser()}/Library/Android/sdk/tools:" + env["PATH"]
+    result = subprocess.run(adb_command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True,
+                            executable='/bin/zsh', env=env)
     if result.returncode == 0:
         return result.stdout.strip()
     print_with_color(f"Command execution failed: {adb_command}", "red")
@@ -130,7 +135,7 @@ class AndroidController:
 
         cap_command = f"adb -s {self.device} shell screencap -p {remote_path}"
         pull_command = f"adb -s {self.device} pull {remote_path} {save_path}"
-        print(remote_path,save_path)
+        print(remote_path, save_path)
         result = execute_adb(cap_command)
         if result != "ERROR":
             result = execute_adb(pull_command)
@@ -145,6 +150,7 @@ class AndroidController:
         if result != "ERROR":
             return result
         return 0
+
     def get_xml(self, prefix, save_dir):
         dump_command = f"adb -s {self.device} shell uiautomator dump " \
                        f"{os.path.join(self.xml_dir, prefix + '.xml').replace(self.backslash, '/')}"
@@ -216,7 +222,7 @@ class AndroidController:
         else:
             return "ERROR"
         duration = 100 if quick else 400
-        adb_command = f"adb -s {self.device} shell input swipe {x} {y} {x+offset[0]} {y+offset[1]} {duration}"
+        adb_command = f"adb -s {self.device} shell input swipe {x} {y} {x + offset[0]} {y + offset[1]} {duration}"
         ret = execute_adb(adb_command)
         return ret
 
