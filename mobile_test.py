@@ -14,29 +14,10 @@ import getpass
 import datetime
 from dotenv import load_dotenv
 
-openai_engine = OpenaiEngine()
-config_path = os.path.join(os.path.dirname(__file__), '.env')
-load_dotenv(config_path)
-
-LOG_DIR = os.environ.get('LOG_DIR')
-
-if LOG_DIR is None:
-    LOG_DIR = '../logs'
-id = str(time.time())
-TRACE_DIR = os.path.join(LOG_DIR, id, 'traces')
-SCREENSHOT_DIR = os.path.join(LOG_DIR, id, 'Screen')
-XML_DIR = os.path.join(LOG_DIR, id, 'xml')
-Video_DIR = os.path.join(LOG_DIR, id, 'video')
-
-os.makedirs(LOG_DIR, exist_ok=True)
-os.makedirs(TRACE_DIR, exist_ok=True)
-os.makedirs(SCREENSHOT_DIR, exist_ok=True)
-os.makedirs(XML_DIR, exist_ok=True)
-#os.makedirs(Video_DIR, exist_ok=True)
-
 def get_code_snippet(content):
     code = re.search(r'```.*?\n([\s\S]+?)\n```', content)
     if code is None:
+        print(content)
         raise RuntimeError()
     code = code.group(1)
     return code
@@ -64,10 +45,16 @@ def get_mobile_device():
     return controller
 
 
-def run(controller, instruction=None) -> None:
+def run(controller, instruction=None, config = None) -> None:
+    openai_engine = OpenaiEngine()
+    if config is not None:
+        TRACE_DIR = config["TRACE_DIR"]
+        SCREENSHOT_DIR = config["SCREENSHOT_DIR"]
+        XML_DIR = config["XML_DIR"]
     page_executor = MobilePageExecutor(context=controller, engine=openai_engine,
                                            screenshot_dir=SCREENSHOT_DIR)
     instruction = input("What would you like to do? >>> ") if instruction is None else instruction
+    id = str(time.time())
     record = JSONRecorder(id = id, instruction=instruction, page_executor=page_executor, trace_dir=TRACE_DIR, xml_dir=XML_DIR)
     page_executor.update_screenshot(prefix=str(0))
     while record.turn_number <= 100:
@@ -90,13 +77,39 @@ def run(controller, instruction=None) -> None:
             page_executor.update_screenshot(prefix="end")
             break
 
+def process_config():
+    config = {}
+    config_path = os.path.join(os.path.dirname(__file__), '.env')
+    load_dotenv(config_path)
+
+    LOG_DIR = os.environ.get('LOG_DIR')
+    config["LOG_DIR"] = LOG_DIR
+
+    if LOG_DIR is None:
+        LOG_DIR = '../logs'
+    id = str(time.time())
+    TRACE_DIR = os.path.join(LOG_DIR, id, 'traces')
+    SCREENSHOT_DIR = os.path.join(LOG_DIR, id, 'Screen')
+    XML_DIR = os.path.join(LOG_DIR, id, 'xml')
+    Video_DIR = os.path.join(LOG_DIR, id, 'video')
+    config["TRACE_DIR"] = TRACE_DIR
+    config["SCREENSHOT_DIR"] = SCREENSHOT_DIR
+    config["XML_DIR"] = XML_DIR
+    config["Video_DIR"] = Video_DIR
+
+    os.makedirs(LOG_DIR, exist_ok=True)
+    os.makedirs(TRACE_DIR, exist_ok=True)
+    os.makedirs(SCREENSHOT_DIR, exist_ok=True)
+    os.makedirs(XML_DIR, exist_ok=True)
+    return config
 def main(instruction=None):
     controller = get_mobile_device()
-    run(controller, instruction=instruction)
+    config = process_config()
+    run(controller, instruction=instruction, config = config)
 
 
 if __name__ == '__main__':
     # main()
-    main('Navigate me to Stanford University on the map')
+    main('使用Amap，我需要去北京南站，请帮我查查打车和坐地铁大概分别最快需要多久')
     # main('I am in Beijing in Tsinghua University. Give me some choices about hotpot restaurants nearby.')
     # main("Sort products by price. Start on http://localhost:7770/sports-outdoors/hunting-fishing.html")

@@ -1,4 +1,5 @@
 import os
+import base64
 import getpass
 import subprocess
 import xml.etree.ElementTree as ET
@@ -186,14 +187,19 @@ class AndroidController:
         return ret
 
     def text(self, input_str):
-        adb_command = f'adb -s {self.device} input keyevent KEYCODE_MOVE_END'
-        ret = execute_adb(adb_command)
+        #adb_command = f'adb -s {self.device} input keyevent KEYCODE_MOVE_END'
+        #ret = execute_adb(adb_command)
         adb_command = f'adb -s {self.device} shell input keyevent --press $(for i in {{1..100}}; do echo -n "67 "; done)'
         ret = execute_adb(adb_command)
+        chars = input_str
+        charsb64 = str(base64.b64encode(chars.encode('utf-8')))[1:]
+        adb_command = f"adb -s {self.device} shell am broadcast -a ADB_INPUT_B64 --es msg {charsb64}"
+        ret = execute_adb(adb_command)
+        '''
         input_str = input_str.replace(" ", "%s")
         input_str = input_str.replace("'", "")
         adb_command = f"adb -s {self.device} shell input text {input_str}"
-        ret = execute_adb(adb_command)
+        ret = execute_adb(adb_command)'''
         return ret
 
     def long_press(self, x, y, duration=1000):
@@ -237,3 +243,7 @@ class AndroidController:
         print("Starting screen record")
         command = f'adb shell screenrecord /sdcard/{prefix}.mp4'
         return subprocess.Popen(command, shell=True)
+
+if __name__ == '__main__':
+    And = AndroidController("emulator-5554")
+    And.text("北京南站")

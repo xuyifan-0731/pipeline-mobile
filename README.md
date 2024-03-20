@@ -14,6 +14,11 @@
       The emulator can be found in the device manager of Android Studio. You can install apps on an emulator by
       downloading APK files from the internet and dragging them to the emulator.
       AppAgent can detect the emulated device and operate apps on it just like operating a real device.
+   5. 为了支持中文输入，需要在手机安装adbkeyboard.apk，可以在[这里](https://github.com/senzhk/ADBKeyBoard/tree/master/)下载，安装后在adb指令执行:
+       ```
+        adb shell ime enable com.android.adbkeyboard/.AdbIME
+        adb shell ime set com.android.adbkeyboard/.AdbIME
+        ```
 
 2. 创建一个.env，在里面填写:
 
