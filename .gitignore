@@ -16,6 +16,7 @@ logs/*
 **/__pycache__
 test
 .env
+evaluation_logs
 
 # webarena
 .auth/

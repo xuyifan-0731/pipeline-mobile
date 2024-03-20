@@ -24,7 +24,6 @@
 
    ```
    GPT4V_TOKEN=""
-   TRACE_DIR="./traces"
    ```
 
 3. pip install -r requirement.txt
