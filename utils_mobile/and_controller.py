@@ -31,6 +31,16 @@ def execute_adb(adb_command):
     print_with_color(result.stderr, "red")
     return "ERROR"
 
+def execute_adb_no_output(adb_command):
+    # print(adb_command)
+    env = os.environ.copy()
+    env["PATH"] = f"/Users/{getpass.getuser()}/Library/Android/sdk/platform-tools:" + env["PATH"]
+    env["PATH"] = f"/Users/{getpass.getuser()}/Library/Android/sdk/tools:" + env["PATH"]
+    result = subprocess.run(adb_command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True,
+                            executable='/bin/zsh', env=env)
+    if result.returncode == 0:
+        return result.stdout.strip()
+    return "ERROR"
 
 def list_all_devices():
     adb_command = "adb devices"

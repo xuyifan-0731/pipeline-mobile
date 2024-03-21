@@ -24,11 +24,26 @@
 
    ```
    GPT4V_TOKEN=""
+   LOG_DIR="./logs"
    ```
 
 3. pip install -r requirement.txt
 
 4. python mobile_test.py 目前需要在mobile_test.py 中修改instruction
+
+## Auto Evaluation
+自动评测（完整评测）需要对.env的内容进行一定修改，在里面增加以下内容：
+   ```
+    AVD_BASE="/Users/xuyifan/.android/avd"
+    AVD_NAME="test_device"
+    ANDROID_SDK_PATH="/Users/xuyifan/Library/Android/sdk"
+    EVA_DATASET="./evaluation_dataset/query.xlsx"
+   ```
+其中，AVD_BASE为AVD的存放路径，AVD_NAME为AVD的名字。应当存在一个AVD_BASE/AVD_NAME.ini 和 AVD_BASE/AVD_NAME.avd文件。
+ANDROID_SDK_PATH为Android SDK的路径。
+EVA_DATASET为评测数据集的路径，目前设定为excel，其中有id，app和query三列，id要求唯一。默认的执行语句为"打开{app}, {query}"，可以在evaluation.py中修改。
+
+完成以上配置后，运行evaluation.py即可，结果保存在evaluation_logs/时间戳文件夹中。
 
 
 ## 在 MacOS 上运行的几个注意事项

@@ -102,6 +102,7 @@ def process_config():
     os.makedirs(SCREENSHOT_DIR, exist_ok=True)
     os.makedirs(XML_DIR, exist_ok=True)
     return config
+
 def main(instruction=None):
     controller = get_mobile_device()
     config = process_config()
