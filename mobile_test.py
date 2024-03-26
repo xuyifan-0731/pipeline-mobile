@@ -10,6 +10,7 @@ import os
 import re
 import sys
 import time
+import yaml
 import getpass
 import datetime
 from dotenv import load_dotenv
@@ -77,10 +78,9 @@ def run(controller, instruction=None, config = None) -> None:
             page_executor.update_screenshot(prefix="end")
             break
 
-def process_config():
-    config = {}
-    config_path = os.path.join(os.path.dirname(__file__), '.env')
-    load_dotenv(config_path)
+def process_config(config_path):
+    with open(config_path, 'r', encoding='utf-8') as f:
+        config = yaml.load(f.read(), Loader=yaml.FullLoader)
 
     LOG_DIR = os.environ.get('LOG_DIR')
     config["LOG_DIR"] = LOG_DIR
@@ -103,14 +103,14 @@ def process_config():
     os.makedirs(XML_DIR, exist_ok=True)
     return config
 
-def main(instruction=None):
+def main(instruction=None, config_path = "config_files/test.yaml"):
     controller = get_mobile_device()
-    config = process_config()
+    config = process_config(config_path)
     run(controller, instruction=instruction, config = config)
 
 
 if __name__ == '__main__':
     # main()
-    main('在12306，买一张从首都机场到广州白云机场的经济舱机票，出发时间为11点以后，最迟下午4点前需要到达')
+    main(instruction = 'open 高德地图，搜索北京清华大学附近的火锅店。',config_path = "config_files/test.yaml")
     # main('I am in Beijing in Tsinghua University. Give me some choices about hotpot restaurants nearby.')
     # main("Sort products by price. Start on http://localhost:7770/sports-outdoors/hunting-fishing.html")

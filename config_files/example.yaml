@@ -1,0 +1,6 @@
+GPT4V_TOKEN:
+LOG_DIR: ./logs
+AVD_BASE: /Users/YourUserName/.android/avd
+AVD_NAME: test_device
+ANDROID_SDK_PATH: /Users/YourUserName/Library/Android/sdk
+EVA_DATASET: ./evaluation_dataset/query.xlsx

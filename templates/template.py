@@ -172,7 +172,7 @@ def do(action, argument=None, element=None, **kwargs):
     """
 
 def find_element_by_instruction(instruction):
-	"""A function that finds the elemention given natural language instructions.
+	"""A function that finds the elemention given natural language instructions. If the instruction involves Chinese on the screen, you must output the corresponding Chinese instead of translating it into English.
 	You must describe the location of the element on the page, such as "bottom left", "top right", "middle center".
 	Remember to include both horizontal and vertical description.
 	Target element must exist on current screenshot.
@@ -200,7 +200,7 @@ def finish(message=None):
 # A toy example
 <|user|>
 # Initial task:
-Set an alarm for 9:00 a.m. every weekday
+Set an alarm for 9:00 a.m. every Monday
 # Observation:
 ** screenshot **
 
@@ -249,13 +249,11 @@ do(action="Tap", argument=None, element=find_element_by_instruction(instruction=
 
 ## Round 3
 * Confirm: The screenshot shows that using the interface described to set a time.
-* Plan: I should tap on the 9 o'clock, and interacting with the AM button.Then Tap the "OK" button to confirm the time.
+* Plan: I should tap on the 9 o'clock.
 * Operation:
 
 ```
 do(action="Tap", argument=None, element=find_element_by_instruction(instruction="The 9 o'clock position on the clock towards the middle left of the page."))
-do(action="Tap", argument=None, element=find_element_by_instruction(instruction="The "AM" button in the top right quadrant of the popup window."))
-do(action="Tap", argument=None, element=find_element_by_instruction(instruction="The "OK" button located at the bottom right of the popup window."))
 ```
 
 <|user|>
@@ -263,16 +261,12 @@ do(action="Tap", argument=None, element=find_element_by_instruction(instruction=
 
 <|assistant|>
 ## Round 4
-* Confirm: The screenshot shows that 9:00 am alarm has been set but not set on weekday.
-* Plan: To set an alarm for 9:00 AM on weekdays, select weekdays (Monday to Friday) by checking the boxes for each day, located within their respective bounds.
+* Confirm: The screenshot shows that 9:00 am alarm has been set but not set on Monday.
+* Plan: To set an alarm for 9:00 AM on weekdays, select Monday, located bounds.
 * Operation:
 
 ```
 do(action="Tap", argument=None, element=find_element_by_instruction(instruction="The "Monday" label located in the center horizontally and in the lower third of the popup window vertically, just below the "11:00 AM Tomorrow" section and to the far left among the days of the week."))
-do(action="Tap", argument=None, element=find_element_by_instruction(instruction="The "Tuesday" label positioned center horizontally, just to the right of "Monday"."))
-do(action="Tap", argument=None, element=find_element_by_instruction(instruction="The "Wednesday" label in the middle center both horizontally and vertically within the popup window displaying the alarm details, positioned just to the right of the "Tuesday" label."))
-do(action="Tap", argument=None, element=find_element_by_instruction(instruction="The "Thursday" label located in the middle center horizontally, just to the right of the "Wednesday" label."))
-do(action="Tap", argument=None, element=find_element_by_instruction(instruction="The "Friday" label positioned in the center horizontally, to the right of the "Thursday" label."))
 ```
 
 <|user|>
@@ -297,6 +291,7 @@ REMEMBER:
 - If the tag of #Finished has been True, your operation must be finished.
 - If you find yourself fallen into some sort of loop, try to use another method or change your action.
 - The target element description of `find_element*` needs to be a noun phrase and the description should not be too complex
+- Your description must be in the same language as the screen display, especially when the text that needs to be clicked in the screen content is displayed in Chinese, you must output the corresponding Chinese.
 - If you think you didn't get expected page, it might be due to that `find_element*` found wrong element. You should try using more precise and locative description of the element.
 - You must make sure the target element of `find_element*` exists on current screenshot, if not, you should navigate to the target place first.
 - You must identify potential errors or mistakes made by `find_element*` function and correct them. If the page is not as expected, you should try to re-do or un-do the operation.

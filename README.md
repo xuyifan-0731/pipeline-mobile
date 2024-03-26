@@ -20,30 +20,33 @@
         adb shell ime set com.android.adbkeyboard/.AdbIME
         ```
 
-2. 创建一个.env，在里面填写:
+2. 根据config_files/example.yaml中的例子创建一个yaml文件，在里面填写:
 
    ```
-   GPT4V_TOKEN=""
-   LOG_DIR="./logs"
+   GPT4V_TOKEN: your token
+   LOG_DIR: ./logs
    ```
 
 3. pip install -r requirement.txt
 
-4. python mobile_test.py 目前需要在mobile_test.py 中修改instruction
+4. python mobile_test.py 目前需要在mobile_test.py 中修改instruction,并且添加第二步中的yaml文件路径
 
 ## Auto Evaluation
-自动评测（完整评测）需要对.env的内容进行一定修改，在里面增加以下内容：
+自动评测（完整评测）需要对yaml文件内容进行一定修改，在里面增加以下内容：
    ```
-    AVD_BASE="/Users/xuyifan/.android/avd"
-    AVD_NAME="test_device"
-    ANDROID_SDK_PATH="/Users/xuyifan/Library/Android/sdk"
-    EVA_DATASET="./evaluation_dataset/query.xlsx"
+GPT4V_TOKEN: 
+LOG_DIR: ./logs
+AVD_BASE: /Users/YourUserName/.android/avd
+AVD_NAME: test_device
+ANDROID_SDK_PATH: /Users/YourUserName/Library/Android/sdk
+EVA_DATASET: ./evaluation_dataset/query.xlsx
    ```
 其中，AVD_BASE为AVD的存放路径，AVD_NAME为AVD的名字。应当存在一个AVD_BASE/AVD_NAME.ini 和 AVD_BASE/AVD_NAME.avd文件。
 ANDROID_SDK_PATH为Android SDK的路径。
-EVA_DATASET为评测数据集的路径，目前设定为excel，其中有id，app和query三列，id要求唯一。默认的执行语句为"打开{app}, {query}"，可以在evaluation.py中修改。
+EVA_DATASET为评测数据集的路径，目前设定为excel，其中有id，app和query三列，id要求唯一。默认的执行语句为"打开{app}, {query}"，可以在evaluation_emulator.py中修改。
+同时，在evaluation.py的main函数传入参数中指定正确的yaml文件路径。
 
-完成以上配置后，运行evaluation.py即可，结果保存在evaluation_logs/时间戳文件夹中。
+完成以上配置后，运行evaluation_emulator.py即可，结果保存在evaluation_logs/时间戳文件夹中。
 
 
 ## 在 MacOS 上运行的几个注意事项
