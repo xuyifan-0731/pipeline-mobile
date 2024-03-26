@@ -16,15 +16,13 @@ from templates import system_templates
 import base64
 from dotenv import load_dotenv
 
-config_path = os.path.join(os.path.dirname(__file__), '.env')
-load_dotenv(config_path)
 
-openai.api_base = "https://one-api.glm.ai/v1"
-openai.api_key = os.getenv('GPT4V_TOKEN')
 
 
 def run_connection_test():
     print("Testing gpt4v connection...")
+    openai.api_base = "https://one-api.glm.ai/v1"
+    openai.api_key = os.getenv('GPT4V_TOKEN')
     response = openai.ChatCompletion.create(
         model="gpt-4-1106-preview",
         messages=[{"role": "user", "content": "你好"}],
@@ -85,8 +83,11 @@ class OpenaiEngine(Engine):
         # convert rate limit to minmum request interval
         self.request_interval = 0 if rate_limit == -1 else 60.0 / rate_limit
         self.current_key_idx = 0
+        self.api_base = "https://one-api.glm.ai/v1"
+        self.api_key = os.getenv('GPT4V_TOKEN')
         run_connection_test()
         Engine.__init__(self, **kwargs)
+
 
     def encode_image(self, image_path):
         with open(self, image_path, "rb") as image_file:
@@ -97,6 +98,8 @@ class OpenaiEngine(Engine):
         (APIError, RateLimitError, APIConnectionError, ServiceUnavailableError, InvalidRequestError),
     )
     def single_turn_generation(self, prompt, system_prompt, image_path, **kwargs):
+        openai.api_base = self.api_base
+        openai.api_key = self.api_key
         base64_image = encode_image(image_path)
         prompt2_input = [{"role": "system", "content": [{"type": "text", "text": system_prompt}]},
                          {"role": "user", "content": [{"type": "image_url",
@@ -124,6 +127,8 @@ class OpenaiEngine(Engine):
     )
     def generate(self, prompt: str, max_new_tokens=4096, temperature=None, model=None, image_path=None,
                  ouput__0=None, turn_number=0, current_feedback=None, sys_prompt="", **kwargs):
+        openai.api_base = self.api_base
+        openai.api_key = self.api_key
         start_time = time.time()
         if (
                 self.request_interval > 0
@@ -184,6 +189,8 @@ class OpenaiEngine(Engine):
     )
     def webarena_generate(self, prompt: str, max_new_tokens=4096, temperature=None, model=None, image_path=None,
                           ouput__0=None, turn_number=0, current_feedback=None, sys_prompt="", **kwargs):
+        openai.api_base = self.api_base
+        openai.api_key = self.api_key
         start_time = time.time()
         if (
                 self.request_interval > 0

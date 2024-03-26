@@ -109,6 +109,10 @@ def process_config_evaluation(evaid=None, taskid=None, config=None, config_path 
         with open(config_path, 'r', encoding='utf-8') as f:
             config = yaml.load(f.read(), Loader=yaml.FullLoader)
 
+    assert "GPT4V_TOKEN" in config, "GPT4V_TOKEN not found in config!"
+
+    os.environ["GPT4V_TOKEN"] = config["GPT4V_TOKEN"]
+
     if evaid is not None and taskid is not None:
         LOG_DIR = "evaluation_logs/" + evaid
         config["LOG_DIR"] = LOG_DIR

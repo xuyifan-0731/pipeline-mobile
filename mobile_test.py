@@ -82,6 +82,10 @@ def process_config(config_path):
     with open(config_path, 'r', encoding='utf-8') as f:
         config = yaml.load(f.read(), Loader=yaml.FullLoader)
 
+    assert "GPT4V_TOKEN" in config, "GPT4V_TOKEN not found in config!"
+
+    os.environ["GPT4V_TOKEN"] = config["GPT4V_TOKEN"]
+
     LOG_DIR = os.environ.get('LOG_DIR')
     config["LOG_DIR"] = LOG_DIR
 
@@ -104,8 +108,8 @@ def process_config(config_path):
     return config
 
 def main(instruction=None, config_path = "config_files/test.yaml"):
-    controller = get_mobile_device()
     config = process_config(config_path)
+    controller = get_mobile_device()
     run(controller, instruction=instruction, config = config)
 
 
