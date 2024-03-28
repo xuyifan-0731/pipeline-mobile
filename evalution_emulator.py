@@ -59,9 +59,13 @@ def start_emulator(config):
 def stop_emulator(emulator_process, out_file, config):
     print_with_color("Stopping Android Emulator...", "blue")
     emulator_process.terminate()
+
     while True:
         try:
             device = get_adb_device_name(config["AVD_NAME"])
+            command = f"adb -s {device} reboot -p"
+            ret = execute_adb_no_output(command)
+            emulator_process.terminate()
         except:
             device = None
         if device is None:
@@ -70,7 +74,6 @@ def stop_emulator(emulator_process, out_file, config):
         time.sleep(1)
 
     out_file.close()
-    sleep_time = 3
 
 
 def get_mobile_evaluation_device(config, emulator_process=None, out_file=None):

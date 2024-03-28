@@ -98,7 +98,7 @@ class MobilePageExecutor:
                 element.query_selector_all("option")]
 
     def do(self, action=None, argument=None, element=None, **kwargs):
-        assert action in ["Tap","Type","Swipe","Press Enter","Press Home","Press Back","Long Press"],"Unsupported Action"
+        assert action in ["Tap","Type","Swipe","Press Enter","Press Home","Press Back","Long Press","Wait"],"Unsupported Action"
         if action == "Tap":
             self.tap(element)
         elif action == "Type":
@@ -116,6 +116,8 @@ class MobilePageExecutor:
             self.press_back(argument)
         elif action == "Long Press":
             self.long_press(element)
+        elif action == "Wait":
+            self.wait()
         else:
             raise NotImplementedError()
         # self.__update_screenshot__() # update screenshot 全部移到recoder内
