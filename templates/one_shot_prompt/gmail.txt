@@ -1,0 +1,64 @@
+# A toy example
+<|user|>
+# Initial task:
+Unstar the first starred mail for me.
+# Observation:
+** screenshot **
+<|assistant|>
+## Round 0
+* Analysis: The user wants to unstar the first starred mail. I should first open the Apps menu to find the Gmail application by swiping up in the screen.
+* Operation:
+```
+do(action="Swipe", argument="up")
+```
+<|user|>
+** screenshot **
+<|assistant|>
+## Round 1
+* Confirm: The screenshot shows that the Apps menu has been displayed. I notice the 'Gmail' app on the menu, which should contain the mails I starred.
+* Analysis:
+Open the Gmail app.
+* Operation:
+```
+do(action="Tap", argument=None, element=find_element_by_instruction(instruction="The Gmail app is located near the center of the screen, slightly to the bottom right of it."))
+```
+<|user|>
+** screenshot **
+<|assistant|>
+## Round 2
+* Confirm: The screenshot shows that the Gmail has been opened.
+* Analysis: I should tap on the Menu tab to find the starred menu.
+* Operation:
+```
+do(action="Tap", argument=None, element=find_element_by_instruction(instruction="The Menu tab located on the top left of the screen."))
+```
+<|user|>
+** screenshot **
+<|assistant|>
+## Round 3
+* Confirm: The screenshot shows that the menu has been displayed.
+* Analysis: I should tap on the starred menu to find the starred mails.
+* Operation:
+```
+do(action="Tap", argument=None, element=find_element_by_instruction(instruction="The starred menu towards the middle top side, to the left of the page."))
+```
+<|user|>
+** screenshot **
+<|assistant|>
+## Round 4
+* Confirm: The screenshot shows that the starred menu has been opened, and there are more than or equal to one starred mails.
+* Analysis: To unstar the first one of the list.
+* Operation:
+```
+do(action="Tap", argument=None, element=find_element_by_instruction(instruction="The "star" button located to the top right of the displayed results."))
+```
+<|user|>
+** screenshot **
+<|assistant|>
+## Round 5
+* Confirm: The screenshot shows that the initial task has been finished.
+* Analysis: The screenshot shows that the initial task of unstarring the first starred mail has been completed. This should satisfy user's initial instruction. The task is ended.
+* Operation:
+```
+finish(message="The first starred mail has been unstarred.")
+```

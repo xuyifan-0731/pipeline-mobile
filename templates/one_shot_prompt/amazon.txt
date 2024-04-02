@@ -1,0 +1,94 @@
+# A toy example
+<|user|>
+# Initial task:
+Add a Samsung Galaxy Cell Phone to your Amazon Shopping cart.
+# Observation:
+** screenshot **
+<|assistant|>
+## Round 0
+* Analysis: The user wants to add a Samsung Galaxy Cell Phone to the Amazon Shopping cart. I should first open the Apps menu to find the Amazon Shopping application by swiping up in the screen.
+* Operation:
+```
+do(action="Swipe", argument="up")
+```
+<|user|>
+** screenshot **
+<|assistant|>
+## Round 1
+* Confirm: The screenshot shows that the Apps menu has been display. I notice the 'Amazon Shopping' app on the menu, which should contain Amazon Shopping cart.
+* Analysis:
+Open the Amazon Shopping app.
+* Operation:
+```
+do(action="Tap", argument=None, element=find_element_by_instruction(instruction="The Amazon Shopping app on the screen."))
+```
+<|user|>
+** screenshot **
+<|assistant|>
+## Round 2
+* Confirm: The screenshot shows that the Amazon Shopping app has been opened. There is a search bar on the top of the screen.
+* Analysis: Search for the Samsung Galaxy Cell Phone.
+* Operation:
+```
+do(action="Tap", argument=None, element=find_element_by_instruction(instruction="The search bar on the top of the screen."))
+```
+<|user|>
+** screenshot **
+<|assistant|>
+## Round 3
+* Confirm: The screenshot shows that the search bar was opened. 
+* Analysis: Search for the Samsung Galaxy Cell Phone..
+* Operation:
+```
+do(action="Type", argument="samsung galaxy cell phone")
+```
+<|user|>
+** screenshot **
+<|assistant|>
+## Round 4
+* Confirm: The screenshot shows the search results of Samsung Galaxy Cell Phone.
+* Analysis: Select the first .
+* Operation:
+```
+do(action="Tap", argument=None, element=find_element_by_instruction(instruction="The first SAMSUNG Galaxy phone on the screen"))
+```
+<|user|>
+** screenshot **
+<|assistant|>
+## Round 5
+* Confirm: The screenshot shows the specification of the phone selected. There is no "Add to Cart" button in the screen.
+* Analysis: Find the "Add to Cart" button.
+* Operation:
+```
+do(action="Swipe", argument="up")
+```
+<|user|>
+** screenshot **
+<|assistant|>
+## Round 6
+* Confirm: The "Add to Cart" button is located at the lower right corner in the screen.
+* Analysis: Tap the "Add to Cart" button to add the phone to the cart.
+* Operation:
+```
+do(action="Tap", argument=None, element=find_element_by_instruction(instruction="The "Add to Cart" button on the screen"))
+```
+<|user|>
+** screenshot **
+<|assistant|>
+## Round 7
+* Confirm: The "Add to Cart" button changes to a text "Added to Cart".
+* Analysis: Check out whether the phone was added to the shopping.
+* Operation:
+```
+do(action="Tap", argument=None, element=find_element_by_instruction(instruction="The shopping cart button with 1 commodity on the screen"))
+```
+<|user|>
+** screenshot **
+<|assistant|>
+## Round 8
+* Confirm: The Samsung Galaxy Cell Phone has already been added in the shopping cart.
+* Analysis: The Samsung Galaxy Cell Phone has already been added in the shopping cart. The task ended.
+* Operation:
+```
+finish(message="The Samsung Galaxy Cell Phone has already been added in the shopping cart.")
+```

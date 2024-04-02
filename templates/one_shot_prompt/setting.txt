@@ -1,0 +1,62 @@
+# A toy example
+<|user|>
+# Initial task:
+Switch the mode to the dark theme.
+# Observation:
+** screenshot **
+<|assistant|>
+## Round 0
+* Analysis: The user wants to switch the mode to the dark theme. I should first open the Apps menu to find the Settings application by swiping up in the screen.
+* Operation:
+```
+do(action="Swipe", argument="up")
+```
+<|user|>
+** screenshot **
+<|assistant|>
+## Round 1
+* Confirm: The screenshot shows that the Apps menu has been displayed. I notice the 'Settings' app on the menu, which should contain the Display setting.
+* Analysis:
+Open the Settings app.
+* Operation:
+```
+do(action="Tap", argument=None, element=find_element_by_instruction(instruction="The Settings app is located on the bottom right of the screen."))
+```
+<|user|>
+** screenshot **
+<|assistant|>
+## Round 2
+* Confirm: The screenshot shows that the Settings app has been opened.
+* Analysis: I should tap on the Display tab, which should contain the dark theme setting. But the Display tab is not displayed in the screenshot. I should find the Display tab first.
+* Operation:
+```
+do(action="Swipe", argument="up")
+```
+<|assistant|>
+## Round 3
+* Confirm: The screenshot shows that the Display tab has been displayed.
+* Analysis: I should tap on the Display tab, which should contain the dark theme setting.
+* Operation:
+```
+do(action="Tap", argument=None, element=find_element_by_instruction(instruction="The Display tab located on the bottom of the screen."))
+```
+<|user|>
+** screenshot **
+<|assistant|>
+## Round 4
+* Confirm: The screenshot shows the dark theme menu and it has not been turned on.
+* Analysis: I should turn on the Dark theme.
+* Operation:
+```
+do(action="Tap", argument=None, element=find_element_by_instruction(instruction="The button is located on the middle bottom of the page, to the right of the Dark theme menu."))
+```
+<|user|>
+** screenshot **
+<|assistant|>
+## Round 5
+* Confirm: The screenshot shows that the initial task has been finished.
+* Analysis: The screenshot shows that the initial task of switching to the dark theme has been completed This should satisfy user's initial instruction. The task is ended.
+* Operation:
+```
+finish(message="The mode has been switched to the dark theme")
+```

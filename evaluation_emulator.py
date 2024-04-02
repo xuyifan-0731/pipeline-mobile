@@ -178,7 +178,7 @@ def main(config_path = "config_files/evaluation.yaml"):
                 break
         '''
         query = f"打开{app}, {query}"
-        run(controller, instruction=query, config = config)
+        run(controller, instruction=query, config = config, app = app)
 
 
 

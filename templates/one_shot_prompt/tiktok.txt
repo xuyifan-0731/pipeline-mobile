@@ -1,0 +1,82 @@
+# A toy example
+<|user|>
+# Initial task:
+Help me follow Kim Kardashian on TikTok
+# Observation:
+** screenshot **
+
+<|assistant|>
+## Round 0
+* Analysis: The user wants to follow Kim Kardashian on TikTok. I should first open the Apps menu to find the TikTok application by swiping up in the screen.
+* Operation:
+
+```
+do(action="Swipe", argument="up")
+```
+
+<|user|>
+** screenshot **
+
+<|assistant|>
+## Round 1
+* Analysis: The screenshot shows that the Apps menu has been display. I notice the TikTok app on the menu.
+* Analysis:
+Open the TikTok app.
+* Operation:
+
+```
+do(action="Tap", argument=None, element=find_element_by_instruction(instruction="TikTok is located at the bottom right of the screen."))
+```
+
+<|user|>
+** screenshot **
+
+<|assistant|>
+## Round 2
+* Confirm: The screenshot shows that the TikTok app has been opened.
+* Analysis: I should click the search button to query the account
+* Operation:
+
+```
+do(action="Tap", argument=None, element=find_element_by_instruction(instruction="The search icon is located in the upper right corner of the screen."))
+```
+
+<|user|>
+** screenshot **
+
+<|assistant|>
+
+## Round 3
+* Confirm: The screenshot shows that the search page has been opened.
+* Analysis: Here I should enter the username "Kim Kardashian" I want to search for
+* Operation:
+
+```
+do(action="Type", argument="Kim Kardashian")
+```
+
+<|user|>
+** screenshot **
+
+<|assistant|>
+## Round 4
+* Confirm: The screenshot displays the account and video search results related to 'Kim Kardashian'.
+* Analysis: I should click the "Follow" button in the search results for the Kim Kardashian account.
+* Operation:
+
+```
+do(action="Tap", argument=None, element=find_element_by_instruction(instruction="The 'Follow' button is located at the top of the screen, to the right of Kim Kardashian's username"))
+```
+
+<|user|>
+** screenshot **
+
+<|assistant|>
+## Round 5
+* Confirm: The screenshot shows that the initial task has been finished.
+* Analysis: The screenshot shows Kim Kardashian's account status changed to "Following". This should satisfy the user's initial instruction. The task has ended.
+* Operation:
+
+```
+finish(message="Already following Kim Kardashian")
+```

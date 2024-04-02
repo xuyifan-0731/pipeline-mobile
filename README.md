@@ -40,6 +40,7 @@ AVD_BASE: /Users/YourUserName/.android/avd
 AVD_NAME: test_device
 ANDROID_SDK_PATH: /Users/YourUserName/Library/Android/sdk
 EVA_DATASET: ./evaluation_dataset/query.xlsx
+PROMPT: android_template
    ```
 其中，AVD_BASE为AVD的存放路径，AVD_NAME为AVD的名字。应当存在一个AVD_BASE/AVD_NAME.ini 和 AVD_BASE/AVD_NAME.avd文件。
 ANDROID_SDK_PATH为Android SDK的路径。
@@ -48,6 +49,7 @@ EVA_DATASET为评测数据集的路径，目前设定为excel，其中有id，ap
 
 完成以上配置后，运行evaluation_emulator.py即可，结果保存在evaluation_logs/时间戳文件夹中。
 
+如果想要使用预设的prompt，在yaml文件中添加PROMPT: android_template，然后在templates/one_shot_prompt中添加相应名字的txt文件。txt的名字与query.xlsx中的app名字一致。
 
 ## 在 MacOS 上运行的几个注意事项
 

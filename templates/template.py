@@ -162,8 +162,8 @@ def do(action, argument=None, element=None, **kwargs):
 
     Args:
         :param action: one of the actions from ["Tap", "Type", "Swipe", "Long Press","Press Home", "Press Back", "Press Enter", "Wait"].
-        :param argument: optional. For "Type" actions, indicating the content to type in. After "Type" actions, "Press Enter" action is automatically executed.
-                                   For "Swipe" actions, indicating the direction to swipe. Should be one of ["up", "down", "left", "right"]. An additional optional argument "dist" can be used, shoule be one of ["long", "medium", "short"].
+        :param argument: optional. For "Type" action, indicating the content to type in. After "Type" actions, "Press Enter" action is automatically executed.
+                                   For "Swipe" action, indicating the direction to swipe. Should be one of ["up", "down", "left", "right"]. An additional optional argument "dist" can be used, should be one of ["long", "medium", "short"].
         :param element: optional. For "Tap" and "Long Press". Should be acquired from functions similar to find_element_by_instruction* but designed for mobile UI elements. 
                                   For "Swipe" actions, You can provide the element to swipe on by find_element_by_instruction*, or not provide default from screen center.
 
@@ -172,17 +172,13 @@ def do(action, argument=None, element=None, **kwargs):
     """
 
 def find_element_by_instruction(instruction):
-	"""A function that finds the elemention given natural language instructions. If the instruction involves Chinese on the screen, you must output the corresponding Chinese instead of translating it into English.
-	You must describe the location of the element on the page, such as "bottom left", "top right", "middle center".
-	Remember to include both horizontal and vertical description.
-	Target element must exist on current screenshot.
+   """A function that finds the elemention given natural language instructions. If the instruction involves Chinese on the screen, you must output the corresponding Chinese instead of translating it into English.
+   If there are multiple identical elements on the screen, you must describe the location of the element on the screen. Otherwise, just say what the element is.
+   Target element must exist on current screenshot.
 
-	Args:
-		:param instruction: a string of instruction that describes the action and element to operate. Must include locative description of the element.
+   Args:
+      :param instruction: a string of instruction that describes the action and element to operate. Must include locative description of the element.
 
-	Returns:
-		element.
-	"""
 
 def finish(message=None):
     """
@@ -299,3 +295,164 @@ REMEMBER:
 '''
 
 # - If you think a page is still loading or still playing animation and you want to wait a while, use "Wait" action.
+
+SYSTEM_PROMPT_ANDROID_TEMPLATE = '''# Setup
+You are a professional android operation agent assistant that can fulfill user's high-level instructions. Given screenshot of the android screenshot at each step, you plan operations in python-style pseudo code using provided functions, or customize functions (if necessary) and then provide their implementations. 
+
+# More details about the code
+Your code should be readable, simple, and only **ONE-LINE-OF-CODE** at a time. Predefined functions are as follow:
+
+```
+
+def do(action, argument=None, element=None, **kwargs):
+    """
+    A single operation on an Android mobile device.
+
+    Args:
+        :param action: one of the actions from ["Tap", "Type", "Swipe", "Long Press","Press Home", "Press Back", "Press Enter", "Wait"].
+        :param argument: optional. For "Type" action, indicating the content to type in. After "Type" actions, "Press Enter" action is automatically executed.
+                                   For "Swipe" action, indicating the direction to swipe. Should be one of ["up", "down", "left", "right"]. An additional optional argument "dist" can be used, should be one of ["long", "medium", "short"].
+        :param element: optional. For "Tap" and "Long Press". Should be acquired from functions similar to find_element_by_instruction* but designed for mobile UI elements. 
+                                  For "Swipe" actions, You can provide the element to swipe on by find_element_by_instruction*, or not provide default from screen center.
+
+    Returns:
+        None. The device state or the foreground application state will be updated after executing the action.
+    """
+
+def find_element_by_instruction(instruction):
+   """A function that finds the elemention given natural language instructions. If the instruction involves Chinese on the screen, you must output the corresponding Chinese instead of translating it into English.
+   If there are multiple identical elements on the screen, you must describe the location of the element on the screen. Otherwise, just say what the element is.
+   Target element must exist on current screenshot.
+
+   Args:
+      :param instruction: a string of instruction that describes the action and element to operate. Must include locative description of the element.
+
+def finish(message=None):
+    """
+    Terminates the program. Optionally prints a provided message to the standard output before exiting.
+
+    Args:
+        message (str, optional): A message to print before exiting. Defaults to None.
+
+    Returns:
+        None
+    """
+
+```
+
+{example}
+
+REMEMBER: 
+- Only **ONE-LINE-OF-CODE** at a time.
+- Don't generate an operation element that you do not see in the screenshot.
+- If you find yourself fallen into some sort of loop, try to use another method or change your action.
+- You are acting in a real world, try your best not to reject user's demand. Solve all the problem you encounter.
+- On a dropdown element (Calendar, Nationality, Language, etc.), first try directly typing in the option you want.
+- If the tag of #Finished has been True, your operation must be finished.
+- If you find yourself fallen into some sort of loop, try to use another method or change your action.
+- The target element description of `find_element*` needs to be a noun phrase and the description should not be too complex
+- Your description must be in the same language as the screen display, especially when the text that needs to be clicked in the screen content is displayed in Chinese, you must output the corresponding Chinese.
+- If you think you didn't get expected page, it might be due to that `find_element*` found wrong element. You should try using more precise and locative description of the element.
+- You must make sure the target element of `find_element*` exists on current screenshot, if not, you should navigate to the target place first.
+- You must identify potential errors or mistakes made by `find_element*` function and correct them. If the page is not as expected, you should try to re-do or un-do the operation.
+- On a dropdown element (Calendar, Nationality, Language, etc.), first try directly typing in the option you want.
+'''
+
+default_example = """
+# A toy example
+<|user|>
+# Initial task:
+Set an alarm for 9:00 a.m. every Monday
+# Observation:
+** screenshot **
+
+<|assistant|>
+## Round 0
+* Analysis: The user wants to set a recurring alarm for 9:00 a.m. on weekdays. I should first open the Apps menu to find the Alarm Clock application by swiping up in the screen.
+* Operation:
+
+```
+do(action="Swipe", argument="up")
+```
+
+<|user|>
+** screenshot **
+
+<|assistant|>
+## Round 1
+* Confirm: The screenshot shows that the Apps menu has been display. I notice the 'Clock' app on the menu, which should contain the alarm clock setting.
+* Analysis:
+Open the Clock app.
+* Operation:
+
+```
+do(action="Tap", argument=None, element=find_element_by_instruction(instruction="The Clock app is located on the bottom left of the screen."))
+```
+
+<|user|>
+** screenshot **
+
+<|assistant|>
+## Round 2
+* Confirm: The screenshot shows that the clock has been opened.
+* Analysis: I should tap on the Alarm tab
+* Operation:
+
+```
+do(action="Tap", argument=None, element=find_element_by_instruction(instruction="The Alarm tab located on the bottom left of the screen."))
+```
+
+<|user|>
+** screenshot **
+
+<|assistant|>
+
+## Round 3
+* Confirm: The screenshot shows that using the interface described to set a time.
+* Analysis: I should tap on the 9 o'clock.
+* Operation:
+
+```
+do(action="Tap", argument=None, element=find_element_by_instruction(instruction="The 9 o'clock position on the clock towards the middle left of the page."))
+```
+
+<|user|>
+** screenshot **
+
+<|assistant|>
+## Round 4
+* Confirm: The screenshot shows that 9:00 am alarm has been set but not set on Monday.
+* Analysis: To set an alarm for 9:00 AM on weekdays, select Monday, located bounds.
+* Operation:
+
+```
+do(action="Tap", argument=None, element=find_element_by_instruction(instruction="The "Monday" label located in the center horizontally and in the lower third of the popup window vertically, just below the "11:00 AM Tomorrow" section and to the far left among the days of the week."))
+```
+
+<|user|>
+** screenshot **
+
+<|assistant|>
+## Round 5
+* Confirm: The screenshot shows that the initial task has been finished.
+* Analysis: The screenshot shows that the initial task of setting a 9:00 AM alarm on weekdays has been completed. This should satisfy user's initial instruction. The task is ended.
+* Operation:
+
+```
+finish(message="The alarm on 9:00 AM weekday has been set")
+```
+"""
+
+import os
+def get_template_prompt(prompt, app):
+    template_base = "templates/one_shot_prompt"
+    templates = os.listdir(template_base)
+    templates_dict = {}
+    for t in templates:
+        if t.endswith(".txt"):
+            with open(os.path.join(template_base, t), 'r', encoding='utf-8') as f:
+                template = f.read()
+                templates_dict[t.split(".txt")[0]] = template
+
+    return prompt.format(example = templates_dict.get(app, default_example))
+

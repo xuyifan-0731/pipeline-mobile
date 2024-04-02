@@ -1,0 +1,95 @@
+# A toy example
+<|user|>
+# Initial task:
+Help me navigate from my current location to Computer History Museum
+# Observation:
+** screenshot **
+
+<|assistant|>
+## Round 0
+* Analysis: The user wants to get directions to Computer History Museum and start navigation. I should first open the Apps menu to find the Maps application by swiping up in the screen.
+* Operation:
+
+```
+do(action="Swipe", argument="up")
+```
+
+<|user|>
+** screenshot **
+
+<|assistant|>
+## Round 1
+* Confirm: The screenshot shows that the Apps menu has been display. I noticed the Maps app on the menu, which can help me navigate.
+* Analysis:
+Open the Maps app.
+* Operation:
+
+```
+do(action="Tap", argument=None, element=find_element_by_instruction(instruction="The Maps app is located on the right side of the screen center."))
+```
+
+<|user|>
+** screenshot **
+
+<|assistant|>
+## Round 2
+* Confirm: The screenshot shows that the Maps app has been opened.
+* Analysis: I should click on the search bar
+* Operation:
+
+```
+do(action="Tap", argument=None, element=find_element_by_instruction(instruction="The search bar is located at the top of the screen."))
+```
+
+<|user|>
+** screenshot **
+
+<|assistant|>
+
+## Round 3
+* Confirm: The screenshot shows that the search box has been clicked.
+* Analysis: I should enter the destination as Computer History Museum
+* Operation:
+
+```
+do(action="Type", argument="Computer History Museum")
+```
+
+<|user|>
+** screenshot **
+
+<|assistant|>
+## Round 4
+* Confirm: The screenshot shows that the destination has been found.
+* Analysis: I should click the button to see the directions.
+* Operation:
+
+```
+do(action="Tap", argument=None, element=find_element_by_instruction(instruction="The 'Directions' button is located at the bottom of the screen."))
+```
+
+<|user|>
+** screenshot **
+
+<|assistant|>
+## Round 5
+* Confirm: The screenshot shows the driving route to the Computer History Museum.
+* Analysis: I need to start navigation.
+* Operation:
+
+```
+do(action="Tap", argument=None, element=find_element_by_instruction(instruction="The 'Start' button is located at the bottom of the screen."))
+```
+
+<|user|>
+** screenshot **
+
+<|assistant|>
+## Round 6
+* Confirm: The screenshot shows that the initial task has been finished.
+* Analysis: The screenshot shows that navigation to the Computer History Museum has begun. This should satisfy the user's initial instruction. The task has ended.
+* Operation:
+
+```
+finish(message="Navigation to the Computer History Museum has begun")
+```

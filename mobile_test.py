@@ -46,7 +46,7 @@ def get_mobile_device():
     return controller
 
 
-def run(controller, instruction=None, config = None) -> None:
+def run(controller, instruction=None, config = None, app = None) -> None:
     openai_engine = OpenaiEngine()
     if config is not None:
         TRACE_DIR = config["TRACE_DIR"]
@@ -62,7 +62,7 @@ def run(controller, instruction=None, config = None) -> None:
         prompt = page_executor.__get_current_status__() if record.turn_number > 0 else instruction
         content = openai_engine.generate(prompt=prompt, image_path=page_executor.current_screenshot,
                                          turn_number=record.turn_number, ouput__0=record.format_history()
-                                         ,sys_prompt="android_basic")
+                                         ,sys_prompt=config["PROMPT"], app = app)
         record.update_response(controller, content)
 
         exe_res = page_executor(get_code_snippet(content))

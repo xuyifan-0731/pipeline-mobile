@@ -11,7 +11,7 @@ from openai.error import (
 )
 
 from templates.template_with_loop import SYSTEM_PROMPT
-from templates import system_templates
+from templates import system_templates, get_template_prompt
 
 import base64
 from dotenv import load_dotenv
@@ -126,7 +126,7 @@ class OpenaiEngine(Engine):
         interval=0.1
     )
     def generate(self, prompt: str, max_new_tokens=4096, temperature=None, model=None, image_path=None,
-                 ouput__0=None, turn_number=0, current_feedback=None, sys_prompt="", **kwargs):
+                 ouput__0=None, turn_number=0, current_feedback=None, sys_prompt="", app = None, **kwargs):
         openai.api_base = self.api_base
         openai.api_key = self.api_key
         start_time = time.time()
@@ -137,6 +137,8 @@ class OpenaiEngine(Engine):
             time.sleep(self.next_avil_time[self.current_key_idx] - start_time)
 
         system_prompt = system_templates.get(sys_prompt, SYSTEM_PROMPT)
+        if sys_prompt == "android_template":
+            system_prompt = get_template_prompt(system_prompt, app)
 
         if turn_number == 0:
             # Assume one turn dialogue

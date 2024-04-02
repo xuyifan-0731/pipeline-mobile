@@ -1,0 +1,82 @@
+# A toy example
+<|user|>
+# Initial task:
+Set an alarm for 9:00 a.m. every Monday
+# Observation:
+** screenshot **
+
+<|assistant|>
+## Round 0
+* Analysis: The user wants to set a recurring alarm for 9:00 a.m. on weekdays. I should first open the Apps menu to find the Alarm Clock application by swiping up in the screen.
+* Operation:
+
+```
+do(action="Swipe", argument="up")
+```
+
+<|user|>
+** screenshot **
+
+<|assistant|>
+## Round 1
+* Confirm: The screenshot shows that the Apps menu has been display. I notice the 'Clock' app on the menu, which should contain the alarm clock setting.
+* Analysis:
+Open the Clock app.
+* Operation:
+
+```
+do(action="Tap", argument=None, element=find_element_by_instruction(instruction="The Clock app is located on the bottom left of the screen."))
+```
+
+<|user|>
+** screenshot **
+
+<|assistant|>
+## Round 2
+* Confirm: The screenshot shows that the clock has been opened.
+* Analysis: I should tap on the Alarm tab
+* Operation:
+
+```
+do(action="Tap", argument=None, element=find_element_by_instruction(instruction="The Alarm tab located on the bottom left of the screen."))
+```
+
+<|user|>
+** screenshot **
+
+<|assistant|>
+
+## Round 3
+* Confirm: The screenshot shows that using the interface described to set a time.
+* Analysis: I should tap on the 9 o'clock.
+* Operation:
+
+```
+do(action="Tap", argument=None, element=find_element_by_instruction(instruction="The 9 o'clock position on the clock towards the middle left of the page."))
+```
+
+<|user|>
+** screenshot **
+
+<|assistant|>
+## Round 4
+* Confirm: The screenshot shows that 9:00 am alarm has been set but not set on Monday.
+* Analysis: To set an alarm for 9:00 AM on weekdays, select Monday, located bounds.
+* Operation:
+
+```
+do(action="Tap", argument=None, element=find_element_by_instruction(instruction="The "Monday" label located in the center horizontally and in the lower third of the popup window vertically, just below the "11:00 AM Tomorrow" section and to the far left among the days of the week."))
+```
+
+<|user|>
+** screenshot **
+
+<|assistant|>
+## Round 5
+* Confirm: The screenshot shows that the initial task has been finished.
+* Analysis: The screenshot shows that the initial task of setting a 9:00 AM alarm on weekdays has been completed. This should satisfy user's initial instruction. The task is ended.
+* Operation:
+
+```
+finish(message="The alarm on 9:00 AM weekday has been set")
+```

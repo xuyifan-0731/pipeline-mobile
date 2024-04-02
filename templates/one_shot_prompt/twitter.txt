@@ -1,0 +1,121 @@
+# A toy example
+<|user|>
+# Initial task:
+Like the first tweet on the NBA official account homepage.
+# Observation:
+** screenshot **
+
+<|assistant|>
+## Round 0
+* Analysis: The user wants to like the first tweet on the official NBA account homepage. I should first open the Apps menu to find the X application by swiping up in the screen.
+* Operation:
+
+```
+do(action="Swipe", argument="up")
+```
+
+<|user|>
+** screenshot **
+
+<|assistant|>
+## Round 1
+* Confirm: The screenshot shows that the Apps menu has been display. I notice the X app on the menu.
+* Analysis:
+Open the X app.
+* Operation:
+
+```
+do(action="Tap", argument=None, element=find_element_by_instruction(instruction="The X app is located at the bottom left of the screen."))
+```
+
+<|user|>
+** screenshot **
+
+<|assistant|>
+## Round 2
+* Confirm: The screenshot shows that the X app has been opened.
+* Analysis: I should click the search button to query the account
+* Operation:
+
+```
+do(action="Tap", argument=None, element=find_element_by_instruction(instruction="The search icon is located at the bottom of the screen"))
+```
+
+<|user|>
+** screenshot **
+
+<|assistant|>
+
+## Round 3
+* Confirm: The screenshot shows that the search page has been opened.
+* Analysis: I should click on the search bar
+* Operation:
+
+```
+do(action="Tap", argument=None, element=find_element_by_instruction(instruction="The search bar is located at the top of the screen."))
+```
+
+<|user|>
+** screenshot **
+
+<|assistant|>
+## Round 4
+* Confirm: The screenshot shows that the search box has been clicked.
+* Analysis: I should type "NBA" here to find this account
+* Operation:
+
+```
+do(action="Type", argument="NBA")
+```
+
+<|user|>
+** screenshot **
+
+<|assistant|>
+## Round 5
+* Confirm: The screenshot shows the search results for accounts related to "NBA".
+* Analysis: I should select the most relevant account in the search results and enter the user homepage.
+* Operation:
+
+```
+do(action="Tap", argument=None, element=find_element_by_instruction(instruction="The certified account with the username "NBA" is located in the middle of the screen and is the first one in the search list."))
+```
+
+<|user|>
+** screenshot **
+
+<|assistant|>
+## Round 6
+* Confirm: The screenshot shows the homepage of the official NBA account. Due to the screen size limitations, the content of the tweets posted by the account are not fully displayed.
+* Analysis: I should swipe up to see the full information of the tweet.
+* Operation:
+
+```
+do(action="Swipe", argument="up")
+```
+
+<|user|>
+** screenshot **
+
+<|assistant|>
+## Round 7
+* Confirm: The screenshot shows the content of the first tweet from the NBA account. Users can further view the details of this tweet, or perform operations such as commenting and likes.
+* Analysis: I should like this tweet.
+* Operation:
+
+```
+do(action="Tap", argument=None, element=find_element_by_instruction(instruction="The Like button is located below the current Tweet."))
+```
+
+<|user|>
+** screenshot **
+
+<|assistant|>
+## Round 8
+* Confirm: The screenshot shows that the initial task has been finished.
+* Analysis: The screenshot shows that the action of liking this tweet has been completed. This should satisfy the user's initial instruction. The task has ended.
+* Operation:
+
+```
+finish(message="The liking of the first tweet on the official NBA account's homepage has been completed.")
+```
