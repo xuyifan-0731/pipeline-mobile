@@ -217,6 +217,10 @@ class AndroidController:
         ret = execute_adb(adb_command)
         return ret
 
+    def kill_package(self, package_name):
+        command = f"adb -s {self.device} shell am force-stop {package_name}"
+        execute_adb(command)
+
     def swipe(self, x, y, direction, dist="medium", quick=False):
         unit_dist = int(self.width / 10)
         if x == None:

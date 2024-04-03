@@ -51,6 +51,8 @@ EVA_DATASET为评测数据集的路径，目前设定为excel，其中有id，ap
 
 如果想要使用预设的prompt，在yaml文件中添加PROMPT: android_template，然后在templates/one_shot_prompt中添加相应名字的txt文件。txt的名字与query.xlsx中的app名字一致。
 
+如果要使用真机评测，运行evaluation_real.py即可，结果保存在evaluation_logs/时间戳文件夹中。注意，真机评测中，需要在evaluation_real的get_package_name函数中，添加app和对应的package name，否则无法正常执行。
+
 ## 在 MacOS 上运行的几个注意事项
 
 1. Mac 上的 `adb` 可能需要通过加载环境变量的方式运行，但是默认的方案中不会主动加载环境变量，因此需要调整 `and_controller.py` 中的 `execute_adb` 函数实现：

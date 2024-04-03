@@ -4,95 +4,54 @@ from utils_mobile.and_controller import AndroidController, list_all_devices, exe
 
 import os
 import sys
+import yaml
 import time
-import subprocess
-from dotenv import load_dotenv
 import pandas as pd
 
+def get_package_name(app):
+    apps_dict = {
+        "Spotify": "com.spotify.music",
+        "Clock": "com.google.android.deskclock",
+        "TikTok": "com.zhiliaoapp.musically",
+        "Clash": "com.github.kr328.clash",
+        "Amazon Shopping": "com.amazon.mShop.android.shopping",
+        "Snapchat": "com.snapchat.android",
+        "Slack": "com.Slack",
+        "Uber": "com.ubercab",
+        "ADB Keyboard": "com.android.adbkeyboard",
+        "Reddit": "com.reddit.frontpage",
+        "Twitter": "com.twitter.android",
+        "Quora": "com.quora.android",
+        "Zoom": "us.zoom.videomeetings",
+        "Booking": "com.booking",
+        "Instagram": "com.instagram.android",
+        "Facebook": "com.facebook.katana",
+        "WhatsApp": "com.whatsapp",
+        "Google Maps": "com.google.android.apps.maps",
+        "YouTube": "com.google.android.youtube",
+        "Netflix": "com.netflix.mediaclient",
+        "LinkedIn": "com.linkedin.android",
+        "Google Drive": "com.google.android.apps.docs",
+        "Gmail": "com.google.android.gm",
+        "Chrome": "com.android.chrome",
+        "Twitch": "tv.twitch.android.app"
+    }
 
-def get_device_list():
-    emulator_list_command = ["emulator", "-list-avds"]
-    device_list = subprocess.run(emulator_list_command, capture_output=True, text=True).stdout.splitlines()
+    return apps_dict.get(app, None)
 
-    return device_list
-
-
-def get_adb_device_name(avd_name=None):
+def get_mobile_device():
     device_list = list_all_devices()
-    for device in device_list:
-        command = f"adb -s {device} emu avd name"
-        ret = execute_adb_no_output(command)
-        ret = ret.split("\n")[0]
-        if ret == avd_name:
-            return device
-    return None
-
-
-def start_emulator(config):
-    avd_name = config["AVD_NAME"]
-    print_with_color(f"Starting Android Emulator with AVD name: {avd_name}", "blue")
-    if not os.path.exists(config["AVD_LOG_DIR"]):
-        os.makedirs(config["AVD_LOG_DIR"], exist_ok=True)
-    out_file = open(os.path.join(config["AVD_LOG_DIR"], 'emulator_output.txt'), 'a')
-    emulator_process = subprocess.Popen(["emulator", "-avd", avd_name, "-no-snapshot-save"], stdout=out_file,
-                                        stderr=out_file)
-    print_with_color(f"Waiting for the emulator to start...", "blue")
-    while True:
-        try:
-            device = get_adb_device_name(avd_name)
-        except:
-            continue
-        if device is not None:
-            break
-    while True:
-        boot_complete = f"adb -s {device} shell getprop init.svc.bootanim"
-        boot_complete = execute_adb_no_output(boot_complete)
-        if boot_complete == 'stopped':
-            print_with_color("Emulator started successfully", "blue")
-            break
-        time.sleep(1)
-    time.sleep(1)
-    return emulator_process, out_file
-
-
-def stop_emulator(emulator_process, out_file, config):
-    print_with_color("Stopping Android Emulator...", "blue")
-    emulator_process.terminate()
-    while True:
-        try:
-            device = get_adb_device_name(config["AVD_NAME"])
-        except:
-            device = None
-        if device is None:
-            print_with_color("Emulator stopped successfully", "blue")
-            break
-        time.sleep(1)
-
-    out_file.close()
-    sleep_time = 3
-
-
-def get_mobile_evaluation_device(config, emulator_process=None, out_file=None):
-    if "AVD_NAME" not in config:
-        print_with_color("ERROR: AVD_NAME not found in config!", "red")
+    if not device_list:
+        print_with_color("ERROR: No device found!", "red")
         sys.exit()
-    AVD_NAME = config["AVD_NAME"]
-    print_with_color(f"Devices attached:\n{AVD_NAME}", "yellow")
-
-    if emulator_process is None:
-        emulator_process, out_file = start_emulator(config)
-    else:
-        stop_emulator(emulator_process, out_file, config)
-        emulator_process, out_file = start_emulator(config)
-
-    print_with_color("Successfully start", "blue")
-    device_list = list_all_devices()
+    print_with_color(f"List of devices attached:\n{str(device_list)}", "yellow")
     if len(device_list) == 1:
         device = device_list[0]
         print_with_color(f"Device selected: {device}", "yellow")
     else:
         print_with_color("Please choose the Android device to start demo by entering its ID:", "blue")
         device = input()
+
     controller = AndroidController(device)
     width, height = controller.get_device_size()
     if not width and not height:
@@ -100,14 +59,17 @@ def get_mobile_evaluation_device(config, emulator_process=None, out_file=None):
         sys.exit()
     print_with_color(f"Screen resolution of {device}: {width}x{height}", "yellow")
 
-    return controller, emulator_process, out_file
+    return controller, device
 
 
-def process_config_evaluation(evaid=None, taskid=None, config=None):
-    if config is None:
-        config = {}
-        config_path = os.path.join(os.path.dirname(__file__), '.env')
-        load_dotenv(config_path)
+def process_config_evaluation(evaid=None, taskid=None, config=None, config_path = None):
+    if config is None and config_path is not None:
+        with open(config_path, 'r', encoding='utf-8') as f:
+            config = yaml.load(f.read(), Loader=yaml.FullLoader)
+
+    assert "GPT4V_TOKEN" in config, "GPT4V_TOKEN not found in config!"
+
+    os.environ["GPT4V_TOKEN"] = config["GPT4V_TOKEN"]
 
     if evaid is not None and taskid is not None:
         LOG_DIR = "evaluation_logs/" + evaid
@@ -133,27 +95,31 @@ def process_config_evaluation(evaid=None, taskid=None, config=None):
         os.makedirs(XML_DIR, exist_ok=True)
         os.makedirs(Video_DIR, exist_ok=True)
 
-    avd_base = config["AVD_BASE"]
-    device_name = config["AVD_NAME"]
-    config["AVD_DIR"] = os.path.join(avd_base, device_name + ".avd")
-    config["AVD_NAME"] = device_name
-    config["AVD_BASE"] = avd_base
 
-    andorid_sdk_path = config["ANDROID_SDK_PATH"]
-    config["ANDROID_SDK_PATH"] = andorid_sdk_path
-    os.environ['ANDROID_HOME'] = andorid_sdk_path
-    os.environ['PATH'] += os.pathsep + os.path.join(os.environ['ANDROID_HOME'], 'emulator')
+
+
+    #avd_base = config["AVD_BASE"]
+    #device_name = config["AVD_NAME"]
+    #config["AVD_DIR"] = os.path.join(avd_base, device_name + ".avd")
+    #config["AVD_NAME"] = device_name
+    #config["AVD_BASE"] = avd_base
+
+    #andorid_sdk_path = config["ANDROID_SDK_PATH"]
+    #config["ANDROID_SDK_PATH"] = andorid_sdk_path
+    #os.environ['ANDROID_HOME'] = andorid_sdk_path
+    #os.environ['PATH'] += os.pathsep + os.path.join(os.environ['ANDROID_HOME'], 'emulator')
 
     return config
 
+def kill_app(controller, package_name):
+    controller.kill_package(package_name)
+    controller.home()
 
-def main(instruction=None):
-    config = process_config_evaluation()
-    df_query = pd.read_excel(config["EVA_DATASET"])
+def main(config_path = "config_files/evaluation.yaml"):
     eva_id = str(time.time())
-    emulator_process = None
-    out_file = None
-
+    config = process_config_evaluation(config_path = config_path, evaid = eva_id)
+    df_query = pd.read_excel(config["EVA_DATASET"])
+    controller, device_name = get_mobile_device()
     for idx, row in df_query.iterrows():
         try:
             id = row["id"]
@@ -161,19 +127,18 @@ def main(instruction=None):
             app = row["app"]
         except:
             continue
+        config = process_config_evaluation(config_path=config_path, evaid=eva_id, taskid=id)
+        package_name = get_package_name(app)
+        if package_name is None:
+            print_with_color(f"ERROR: Package name not found for {app}", "red")
+            continue
         print_with_color(f"Processing {id} {query}", "yellow")
-        config = process_config_evaluation(eva_id, id, config)
-        controller, emulator_process, out_file = get_mobile_evaluation_device(config, emulator_process, out_file)
-        '''
-        while True:
-            done = input("input done to continue:")
-            if done == "done":
-                break
-        '''
-        query = f"打开{app}, {query}"
-        run(controller, instruction=query, config = config)
+        query = f"Open {app}, {query}"
+        run(controller, instruction=query, config = config, app = app)
+        kill_app(controller, package_name)
+
 
 
 
 if __name__ == "__main__":
-    main()
+    main(config_path = "config_files/evaluation.yaml")
