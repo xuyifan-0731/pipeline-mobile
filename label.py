@@ -1,6 +1,7 @@
 from page_executor import MobilePageExecutor
 from recorder import JSONRecorder
 import tkinter as tk
+from tkinter import ttk
 import argparse
 from gpt4v import OpenaiEngine
 
@@ -75,10 +76,11 @@ def run(controller, config = None, app = None) -> None:
     print_with_color(f"Autonomous exploration completed successfully.", "yellow")
 
 
-def process_config(config_path):
-    with open(config_path, 'r', encoding='utf-8') as f:
-        config = yaml.load(f.read(), Loader=yaml.FullLoader)
-
+def process_config(task, storage, platform):
+    config = {}
+    config["TASK_DESCRIPTION"] = task
+    config["LOG_DIR"] = storage
+    config["DEVICE"] = platform
     LOG_DIR = config["LOG_DIR"]
     config["TASK_DESCRIPTION"] = config["TASK_DESCRIPTION"].replace(' ', '_').replace('/', '_')
     id = config["TASK_DESCRIPTION"][:32] + '_' + str(time.time())
@@ -99,45 +101,61 @@ def process_config(config_path):
     os.makedirs(XML_DIR, exist_ok=True)
     return config
 
-def main(config_path = "config_files/label.yaml"):
-    config = process_config(config_path)
+def main(task, storage, platform):
+    config = process_config(task, storage, platform)
     controller = get_mobile_device()
     run(controller, config = config)
 
 class Application(tk.Tk):
     def __init__(self):
         super().__init__()
-        self.title("配置文件路径输入")
-        self.geometry("400x100")
+        self.title("配置文件路径")
+        self.geometry("800x400")
 
         self.initUI()
 
+
     def initUI(self):
-        self.label = tk.Label(self, text="请输入或选择config_path:")
-        self.label.pack(padx=5, pady=5)
+        # 任务名称输入框
+        self.task_label = tk.Label(self, text="当前任务:")
+        self.task_label.pack(padx=5, pady=5)
 
-        self.entry = tk.Entry(self)
-        self.entry.pack(padx=5, pady=5, fill=tk.X, expand=True)
+        self.task_entry = tk.Entry(self)
+        self.task_entry.pack(padx=5, pady=5, fill=tk.X, expand=True)
 
-        default_config_path = "config_files/label.yaml"
-        self.entry.insert(0, default_config_path)
+        # 结果存储位置输入框
+        self.storage_label = tk.Label(self, text="结果存储位置:")
+        self.storage_label.pack(padx=5, pady=5)
 
-        self.browse_button = tk.Button(self, text="浏览", command=self.browseFile)
-        self.browse_button.pack(side=tk.LEFT, padx=5, pady=5)
+        self.storage_entry = tk.Entry(self)
+        self.storage_entry.pack(padx=5, pady=5, fill=tk.X, expand=True)
 
+        # 平台选择下拉框
+        self.platform_label = tk.Label(self, text="选择平台:")
+        self.platform_label.pack(padx=5, pady=5)
+
+        self.platform_combo = ttk.Combobox(self, values=["android", "huawei", "else"])
+        self.platform_combo.pack(padx=5, pady=5, fill=tk.X, expand=True)
+
+        # 浏览按钮（假设用于选择结果存储位置）
+        #self.browse_button = tk.Button(self, text="浏览", command=self.browseFile)
+        #self.browse_button.pack(side=tk.LEFT, padx=5, pady=5)
+
+        # 执行按钮
         self.submit_button = tk.Button(self, text="执行", command=self.executeMain)
         self.submit_button.pack(side=tk.RIGHT, padx=5, pady=5)
 
-    def browseFile(self):
-        file_path = filedialog.askopenfilename()
-        if file_path:
-            self.entry.delete(0, tk.END)
-            self.entry.insert(0, file_path)
+    #def browseFile(self):
+        #file_path = filedialog.askopenfilename()
+        #if file_path:
+            #self.entry.delete(0, tk.END)
+            #self.entry.insert(0, file_path)
 
     def executeMain(self):
-        config_path = self.entry.get()
-        if config_path:
-            main(config_path)
+        print(self.task_entry.get(), self.storage_entry.get(), self.platform_combo.get())
+
+        if self.task_entry.get():
+            main(self.task_entry.get(), self.storage_entry.get(), self.platform_combo.get())
             messagebox.showinfo("成功", "操作完成！")
         else:
             messagebox.showerror("错误", "请输入配置文件路径！")
