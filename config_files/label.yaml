@@ -1,0 +1,4 @@
+TASK_DESCRIPTION: This is a task description
+LOG_DIR: ./label_logs
+DEVICE: android
+# device请输入以下三种中的一种：huawei, android, else.使用harmonyos的设备请填写huawei

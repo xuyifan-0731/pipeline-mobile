@@ -11,7 +11,7 @@ from functools import partial
 
 
 class MobilePageExecutor:
-    def __init__(self, context, engine, screenshot_dir):
+    def __init__(self, context, engine = None, screenshot_dir = None):
         self.context = context
         self.device = context.device
         #self.page = page
@@ -81,12 +81,16 @@ class MobilePageExecutor:
             methods_dict[name] = partial(method, self)
         return methods_dict
 
-    def update_screenshot(self, prefix = None):
-        time.sleep(5)
-        if prefix is None:
+    def update_screenshot(self, prefix = None, suffix = None):
+        time.sleep(2)
+        if prefix is None and suffix is None:
             self.current_screenshot = f"{self.screenshot_dir}/screenshot-{time.time()}.png"
-        else:
+        elif prefix is not None and suffix is None:
             self.current_screenshot = f"{self.screenshot_dir}/screenshot-{prefix}-{time.time()}.png"
+        elif prefix is None and suffix is not None:
+            self.current_screenshot = f"{self.screenshot_dir}/screenshot-{time.time()}-{suffix}.png"
+        else:
+            self.current_screenshot = f"{self.screenshot_dir}/screenshot-{prefix}-{time.time()}-{suffix}.png"
         self.context.save_screenshot(self.current_screenshot)
 
     def __get_element_by_coordinates__(self, coordinates):
@@ -194,15 +198,15 @@ class MobilePageExecutor:
                                "kwargs": {"argument": argument, "instruction": instruction},
                                "bbox": bbox}
 
-    def press_enter(self, argument):
+    def press_enter(self, argument = None):
         self.context.enter()
         self.current_return = {"operation": "do", "action": 'Press Enter', "kwargs": {"argument": argument}}
 
-    def press_back(self, argument):
+    def press_back(self, argument = None):
         self.context.back()
         self.current_return = {"operation": "do", "action": 'Press Back', "kwargs": {"argument": argument}}
 
-    def press_home(self, argument):
+    def press_home(self, argument = None):
         self.context.home()
         self.current_return = {"operation": "do", "action": 'Press Home', "kwargs": {"argument": argument}}
 

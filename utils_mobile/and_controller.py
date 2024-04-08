@@ -110,6 +110,7 @@ class AndroidController:
         self.width, self.height = self.get_device_size()
         self.viewport_size = (self.width, self.height)
         self.backslash = "\\"
+        self.set_adb_keyboard()
 
     '''
     def get_device_size(self):
@@ -118,6 +119,11 @@ class AndroidController:
         if result != "ERROR":
             return map(int, result.split(": ")[1].split("x"))
         return 0, 0'''
+
+    def set_adb_keyboard(self):
+        command = f"adb -s {self.device} shell ime set com.android.adbkeyboard/.AdbIME"
+        result = execute_adb(command)
+        return result
 
     def get_device_size(self):
         command = f"adb -s {self.device} shell wm size"
