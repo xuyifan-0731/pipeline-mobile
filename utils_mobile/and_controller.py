@@ -112,6 +112,13 @@ class AndroidController:
         self.backslash = "\\"
         self.set_adb_keyboard()
 
+        command1 = f"adb -s {self.device} shell settings put global window_animation_scale 0"
+        command2 = f"adb -s {self.device} shell settings put global transition_animation_scale 0"
+        command3 = f"adb -s {self.device} shell settings put global animator_duration_scale 0"
+        execute_adb_no_output(command1)
+        execute_adb_no_output(command2)
+        execute_adb_no_output(command3)
+
     '''
     def get_device_size(self):
         adb_command = f"adb -s {self.device} shell wm size"
