@@ -1,33 +1,37 @@
 from page_executor import MobilePageExecutor
 from recorder import JSONRecorder
-import tkinter as tk
 from tkinter import ttk
-import argparse
-from gpt4v import OpenaiEngine
+
 
 from utils_mobile.utils import print_with_color
 from utils_mobile.label_utils import TouchEventParser
 from utils_mobile.and_controller import AndroidController, list_all_devices
 
 import tkinter as tk
-from tkinter import filedialog, messagebox
+from tkinter import messagebox
 
 import os
-import re
 import sys
 import time
-import yaml
-import getpass
-import datetime
-from dotenv import load_dotenv
 
-def get_code_snippet(content):
-    code = re.search(r'```.*?\n([\s\S]+?)\n```', content)
-    if code is None:
-        print(content)
-        raise RuntimeError()
-    code = code.group(1)
-    return code
+def is_utf8_chars(input_str):
+    """
+    Check if the input string consists solely of UTF-8 encoded characters.
+
+    Args:
+    input_str (str): The input string to check.
+
+    Returns:
+    bool: True if the input string is valid UTF-8, False otherwise.
+    """
+    try:
+        # 先将字符串编码为UTF-8字节序列，然后尝试解码
+        input_str.encode('utf-8').decode('utf-8')
+        return True
+    except UnicodeDecodeError:
+        # 如果在解码过程中出现UnicodeDecodeError异常，则不是有效的UTF-8
+        return False
+
 
 def get_mobile_device():
     device_list = list_all_devices()
@@ -51,12 +55,6 @@ def get_mobile_device():
 
     return controller
 
-def get_planner(engine, prompt, page_executor, record, config, app):
-    content = engine.generate(prompt=prompt, image_path=page_executor.current_screenshot,
-                                     turn_number=record.turn_number, ouput__0=record.format_history()
-                                     , sys_prompt=config["PROMPT"], app=app)
-    return content
-
 def run(controller, config = None, app = None) -> None:
     if config is not None:
         TRACE_DIR = config["TRACE_DIR"]
@@ -76,14 +74,20 @@ def run(controller, config = None, app = None) -> None:
     print_with_color(f"Autonomous exploration completed successfully.", "yellow")
 
 
-def process_config(task, storage, platform):
+def process_config(task, task_id, storage, platform):
     config = {}
     config["TASK_DESCRIPTION"] = task
     config["LOG_DIR"] = storage
     config["DEVICE"] = platform
     LOG_DIR = config["LOG_DIR"]
     config["TASK_DESCRIPTION"] = config["TASK_DESCRIPTION"].replace(' ', '_').replace('/', '_')
-    id = config["TASK_DESCRIPTION"][:32] + '_' + str(time.time())
+
+    assert task_id.isdigit(), "task_id must be an integer"
+
+    id = str(task_id) + '_' + str(time.time())
+
+    assert is_utf8_chars(id), "id must be valid UTF-8, delete Chinese words in the task description or path"
+
     SAVE_DIR = os.path.join(LOG_DIR, id)
     TRACE_DIR = os.path.join(LOG_DIR, id, 'traces')
     SCREENSHOT_DIR = os.path.join(LOG_DIR, id, 'Screen')
@@ -101,8 +105,8 @@ def process_config(task, storage, platform):
     os.makedirs(XML_DIR, exist_ok=True)
     return config
 
-def main(task, storage, platform):
-    config = process_config(task, storage, platform)
+def main(task, taskid, storage, platform):
+    config = process_config(task, taskid, storage, platform)
     controller = get_mobile_device()
     run(controller, config = config)
 
@@ -110,7 +114,7 @@ class Application(tk.Tk):
     def __init__(self):
         super().__init__()
         self.title("配置文件路径")
-        self.geometry("800x400")
+        self.geometry("800x800")
 
         self.initUI()
 
@@ -122,6 +126,12 @@ class Application(tk.Tk):
 
         self.task_entry = tk.Entry(self)
         self.task_entry.pack(padx=5, pady=5, fill=tk.X, expand=True)
+
+        self.task_idlabel = tk.Label(self, text="当前任务id:")
+        self.task_idlabel.pack(padx=5, pady=5)
+
+        self.task_identry = tk.Entry(self)
+        self.task_identry.pack(padx=5, pady=5, fill=tk.X, expand=True)
 
         # 结果存储位置输入框
         self.storage_label = tk.Label(self, text="结果存储位置:")
@@ -137,25 +147,16 @@ class Application(tk.Tk):
         self.platform_combo = ttk.Combobox(self, values=["android", "huawei", "else"])
         self.platform_combo.pack(padx=5, pady=5, fill=tk.X, expand=True)
 
-        # 浏览按钮（假设用于选择结果存储位置）
-        #self.browse_button = tk.Button(self, text="浏览", command=self.browseFile)
-        #self.browse_button.pack(side=tk.LEFT, padx=5, pady=5)
-
         # 执行按钮
         self.submit_button = tk.Button(self, text="执行", command=self.executeMain)
         self.submit_button.pack(side=tk.RIGHT, padx=5, pady=5)
 
-    #def browseFile(self):
-        #file_path = filedialog.askopenfilename()
-        #if file_path:
-            #self.entry.delete(0, tk.END)
-            #self.entry.insert(0, file_path)
 
     def executeMain(self):
-        print(self.task_entry.get(), self.storage_entry.get(), self.platform_combo.get())
+        print(self.task_entry.get(), self.task_identry.get(), self.storage_entry.get(), self.platform_combo.get())
 
         if self.task_entry.get():
-            main(self.task_entry.get(), self.storage_entry.get(), self.platform_combo.get())
+            main(self.task_entry.get(), self.task_identry.get(), self.storage_entry.get(), self.platform_combo.get())
             messagebox.showinfo("成功", "操作完成！")
         else:
             messagebox.showerror("错误", "请输入配置文件路径！")

@@ -159,12 +159,17 @@ class AndroidController:
 
         cap_command = f"adb -s {self.device} shell screencap -p {remote_path}"
         pull_command = f"adb -s {self.device} pull {remote_path} {save_path}"
+        delete_command = f"adb -s {self.device} shell rm {remote_path}"
         print(remote_path, save_path)
         result = execute_adb(cap_command)
         if result != "ERROR":
             result = execute_adb(pull_command)
             if result != "ERROR":
-                return save_path
+                delete_result = execute_adb(delete_command)
+                if delete_result != "ERROR":
+                    return save_path
+                else:
+                    return delete_result
             return result
         return result
 
@@ -176,16 +181,22 @@ class AndroidController:
         return 0
 
     def get_xml(self, prefix, save_dir):
-        dump_command = f"adb -s {self.device} shell uiautomator dump " \
-                       f"{os.path.join(self.xml_dir, prefix + '.xml').replace(self.backslash, '/')}"
-        pull_command = f"adb -s {self.device} pull " \
-                       f"{os.path.join(self.xml_dir, prefix + '.xml').replace(self.backslash, '/')} " \
-                       f"{os.path.join(save_dir, prefix + '.xml')}"
+        remote_path = f"{os.path.join(self.xml_dir, prefix + '.xml').replace(self.backslash, '/')}"
+        local_path = os.path.join(save_dir, prefix + '.xml')
+
+        dump_command = f"adb -s {self.device} shell uiautomator dump {remote_path}"
+        pull_command = f"adb -s {self.device} pull {remote_path} {local_path}"
+        delete_command = f"adb -s {self.device} shell rm {remote_path}"
+
         result = execute_adb(dump_command)
         if result != "ERROR":
             result = execute_adb(pull_command)
             if result != "ERROR":
-                return os.path.join(save_dir, prefix + ".xml")
+                delete_result = execute_adb(delete_command)
+                if delete_result != "ERROR":
+                    return local_path
+                else:
+                    return delete_result
             return result
         return result
 

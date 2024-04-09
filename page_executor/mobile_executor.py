@@ -82,7 +82,7 @@ class MobilePageExecutor:
         return methods_dict
 
     def update_screenshot(self, prefix = None, suffix = None):
-        time.sleep(2)
+        #time.sleep(2)
         if prefix is None and suffix is None:
             self.current_screenshot = f"{self.screenshot_dir}/screenshot-{time.time()}.png"
         elif prefix is not None and suffix is None:

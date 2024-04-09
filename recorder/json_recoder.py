@@ -37,17 +37,18 @@ class JSONRecorder:
             "target": self.instruction
         }
         self.contents.append(step)
-        context.get_xml(prefix=str(self.turn_number) + ".xml", save_dir=self.xml_file_path)
+        context.get_xml(prefix=str(self.turn_number), save_dir=self.xml_file_path)
 
 
     def update_execution(self, exe_res, status = None):
         self.contents[-1]['parsed_action'] = exe_res
         with open(self.trace_file_path, 'a') as f:
             f.write(json.dumps(self.contents[-1], ensure_ascii=False) + '\n')
+        '''
         if status is not None:
             self.page_executor.update_screenshot(prefix=str(self.turn_number), suffix=status)
         else:
-            self.page_executor.update_screenshot(prefix=str(self.turn_number))
+            self.page_executor.update_screenshot(prefix=str(self.turn_number))'''
 
     def format_history(self):
         history = []
